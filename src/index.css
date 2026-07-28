@@ -8,4 +8,10 @@
 
 body {
   margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+@keyframes flyLeft {
+  from { transform: translateX(calc(100vw - 5rem)); }
+  to   { transform: translateX(0); }
 }

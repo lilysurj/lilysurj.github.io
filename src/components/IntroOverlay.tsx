@@ -1,50 +1,24 @@
 import { type FC, useEffect, useRef, useState } from 'react';
+import leftHand from '../assets/left-hand-trans.png';
+import rightHand from '../assets/right-hand-trans.png';
 
 // ---------------------------------------------------------------------------
-// Layout constants — all viewport-relative so they work at any screen size.
+// Layout constants
 //
-// Both hands are 55vw wide. Heights follow viewBox aspect ratios.
-// Fingertip positions are derived from the original world-coordinate data:
-//   left fingertip:  SVG (402, 164) out of (460, 170)
-//   right fingertip: SVG (122, 284) out of (460, 290)
+// Both PNG images are 5250×4054 RGBA. They're a matched pair:
+//   left hand: content in left 0–47.1% of canvas, fingertip at (47.1%, 53.7%)
+//   right hand: content in right 48.2–100% of canvas, fingertip at (48.2%, 52.6%)
 //
-// Slide: each hand travels 6vw so the fingertips meet near the screen center.
-//   left rest → left: 0,   touch → left: 6vw
-//   right rest → left: 45vw (right edge = 100vw), touch → left: 39vw
-//
-// Vertical: top = 50vh − (fingertip_y / 460) × 55vw  keeps both fingertips
-// at the screen's vertical midpoint. The right arm's shoulder may extend
-// above the viewport on wide screens; overflow: hidden clips it cleanly.
+// At width=100vw both images sit naturally side-by-side with fingertips
+// ~1vw apart. SLIDE offsets each hand outward at rest and animates them in.
 // ---------------------------------------------------------------------------
-const HAND_W     = '55vw';
-const LEFT_H     = 'calc(55vw * 170 / 460)';   // preserves 460:170 aspect ratio
-const RIGHT_H    = 'calc(55vw * 290 / 460)';   // preserves 460:290 aspect ratio
-const LEFT_TOP   = 'calc(50vh - 55vw * 164 / 460)';  // fingertip at vertical center
-const RIGHT_TOP  = 'calc(50vh - 55vw * 284 / 460)';  // fingertip at vertical center
-const SLIDE      = '6vw';
-// Spark: fingertips meet at left + HAND_W × (402/460) = 6vw + 48vw ≈ 54vw
-const SPARK_LEFT = 'calc(6vw + 55vw * 402 / 460)';
-const SPARK_TOP  = '50vh';
+const SLIDE = '6vw';
 
-// ---------------------------------------------------------------------------
-// Static halftone dot clouds — copied verbatim from the generated SVGs.
-// dangerouslySetInnerHTML is safe here: this is authored data, not user input.
-// ---------------------------------------------------------------------------
-const LEFT_DOTS =
-  '<circle cx="165.0" cy="5.0" r="1.69"/><circle cx="175.0" cy="5.0" r="1.85"/><circle cx="185.0" cy="5.0" r="1.93"/><circle cx="195.0" cy="5.0" r="2.12"/><circle cx="205.0" cy="5.0" r="2.12"/><circle cx="215.0" cy="5.0" r="2.34"/><circle cx="225.0" cy="5.0" r="2.0"/><circle cx="145.0" cy="15.0" r="2.52"/><circle cx="155.0" cy="15.0" r="3.08"/><circle cx="165.0" cy="15.0" r="3.4"/><circle cx="175.0" cy="15.0" r="3.47"/><circle cx="185.0" cy="15.0" r="3.54"/><circle cx="195.0" cy="15.0" r="3.57"/><circle cx="205.0" cy="15.0" r="3.69"/><circle cx="215.0" cy="15.0" r="3.61"/><circle cx="225.0" cy="15.0" r="3.4"/><circle cx="235.0" cy="15.0" r="3.4"/><circle cx="245.0" cy="15.0" r="3.07"/><circle cx="255.0" cy="15.0" r="2.77"/><circle cx="265.0" cy="15.0" r="2.68"/><circle cx="275.0" cy="15.0" r="2.66"/><circle cx="285.0" cy="15.0" r="2.66"/><circle cx="295.0" cy="15.0" r="2.69"/><circle cx="305.0" cy="15.0" r="2.8"/><circle cx="315.0" cy="15.0" r="2.8"/><circle cx="325.0" cy="15.0" r="2.66"/><circle cx="335.0" cy="15.0" r="1.57"/><circle cx="125.0" cy="25.0" r="2.45"/><circle cx="135.0" cy="25.0" r="3.19"/><circle cx="145.0" cy="25.0" r="3.7"/><circle cx="155.0" cy="25.0" r="3.43"/><circle cx="165.0" cy="25.0" r="3.37"/><circle cx="175.0" cy="25.0" r="3.76"/><circle cx="185.0" cy="25.0" r="3.8"/><circle cx="195.0" cy="25.0" r="3.78"/><circle cx="205.0" cy="25.0" r="3.8"/><circle cx="215.0" cy="25.0" r="3.82"/><circle cx="225.0" cy="25.0" r="3.62"/><circle cx="235.0" cy="25.0" r="3.54"/><circle cx="245.0" cy="25.0" r="3.74"/><circle cx="255.0" cy="25.0" r="3.78"/><circle cx="265.0" cy="25.0" r="3.77"/><circle cx="275.0" cy="25.0" r="3.72"/><circle cx="285.0" cy="25.0" r="3.62"/><circle cx="295.0" cy="25.0" r="3.61"/><circle cx="305.0" cy="25.0" r="3.65"/><circle cx="315.0" cy="25.0" r="3.73"/><circle cx="325.0" cy="25.0" r="3.82"/><circle cx="335.0" cy="25.0" r="3.21"/><circle cx="345.0" cy="25.0" r="1.88"/><circle cx="105.0" cy="35.0" r="1.5"/><circle cx="115.0" cy="35.0" r="2.94"/><circle cx="125.0" cy="35.0" r="3.86"/><circle cx="135.0" cy="35.0" r="3.91"/><circle cx="145.0" cy="35.0" r="3.86"/><circle cx="155.0" cy="35.0" r="3.8"/><circle cx="165.0" cy="35.0" r="3.5"/><circle cx="175.0" cy="35.0" r="3.5"/><circle cx="185.0" cy="35.0" r="3.6"/><circle cx="195.0" cy="35.0" r="3.73"/><circle cx="205.0" cy="35.0" r="3.83"/><circle cx="215.0" cy="35.0" r="3.85"/><circle cx="225.0" cy="35.0" r="3.64"/><circle cx="235.0" cy="35.0" r="3.51"/><circle cx="245.0" cy="35.0" r="3.62"/><circle cx="255.0" cy="35.0" r="3.78"/><circle cx="265.0" cy="35.0" r="3.83"/><circle cx="275.0" cy="35.0" r="3.82"/><circle cx="285.0" cy="35.0" r="3.73"/><circle cx="295.0" cy="35.0" r="3.7"/><circle cx="305.0" cy="35.0" r="3.72"/><circle cx="315.0" cy="35.0" r="3.7"/><circle cx="325.0" cy="35.0" r="3.68"/><circle cx="335.0" cy="35.0" r="3.47"/><circle cx="345.0" cy="35.0" r="3.16"/><circle cx="355.0" cy="35.0" r="2.45"/><circle cx="365.0" cy="35.0" r="1.85"/><circle cx="85.0" cy="45.0" r="1.63"/><circle cx="95.0" cy="45.0" r="2.62"/><circle cx="105.0" cy="45.0" r="3.58"/><circle cx="115.0" cy="45.0" r="3.95"/><circle cx="125.0" cy="45.0" r="3.94"/><circle cx="135.0" cy="45.0" r="3.85"/><circle cx="145.0" cy="45.0" r="3.8"/><circle cx="155.0" cy="45.0" r="3.9"/><circle cx="165.0" cy="45.0" r="3.82"/><circle cx="175.0" cy="45.0" r="3.57"/><circle cx="185.0" cy="45.0" r="3.58"/><circle cx="195.0" cy="45.0" r="3.73"/><circle cx="205.0" cy="45.0" r="3.95"/><circle cx="215.0" cy="45.0" r="3.95"/><circle cx="225.0" cy="45.0" r="3.66"/><circle cx="235.0" cy="45.0" r="3.36"/><circle cx="245.0" cy="45.0" r="3.44"/><circle cx="255.0" cy="45.0" r="3.73"/><circle cx="265.0" cy="45.0" r="3.83"/><circle cx="275.0" cy="45.0" r="3.73"/><circle cx="285.0" cy="45.0" r="3.49"/><circle cx="295.0" cy="45.0" r="3.39"/><circle cx="305.0" cy="45.0" r="3.3"/><circle cx="315.0" cy="45.0" r="3.37"/><circle cx="325.0" cy="45.0" r="3.5"/><circle cx="335.0" cy="45.0" r="3.4"/><circle cx="345.0" cy="45.0" r="3.33"/><circle cx="355.0" cy="45.0" r="3.28"/><circle cx="365.0" cy="45.0" r="2.8"/><circle cx="375.0" cy="45.0" r="2.77"/><circle cx="385.0" cy="45.0" r="2.43"/><circle cx="395.0" cy="45.0" r="2.19"/><circle cx="405.0" cy="45.0" r="1.83"/><circle cx="65.0" cy="55.0" r="1.88"/><circle cx="75.0" cy="55.0" r="2.75"/><circle cx="85.0" cy="55.0" r="3.58"/><circle cx="95.0" cy="55.0" r="3.78"/><circle cx="105.0" cy="55.0" r="3.94"/><circle cx="115.0" cy="55.0" r="3.96"/><circle cx="125.0" cy="55.0" r="3.82"/><circle cx="135.0" cy="55.0" r="3.5"/><circle cx="145.0" cy="55.0" r="3.42"/><circle cx="155.0" cy="55.0" r="3.57"/><circle cx="165.0" cy="55.0" r="3.78"/><circle cx="175.0" cy="55.0" r="3.8"/><circle cx="185.0" cy="55.0" r="3.91"/><circle cx="195.0" cy="55.0" r="3.97"/><circle cx="205.0" cy="55.0" r="4.09"/><circle cx="215.0" cy="55.0" r="4.07"/><circle cx="225.0" cy="55.0" r="3.73"/><circle cx="235.0" cy="55.0" r="3.15"/><circle cx="245.0" cy="55.0" r="3.1"/><circle cx="255.0" cy="55.0" r="3.44"/><circle cx="265.0" cy="55.0" r="3.54"/><circle cx="275.0" cy="55.0" r="3.36"/><circle cx="285.0" cy="55.0" r="3.08"/><circle cx="295.0" cy="55.0" r="2.87"/><circle cx="305.0" cy="55.0" r="2.56"/><circle cx="315.0" cy="55.0" r="2.95"/><circle cx="325.0" cy="55.0" r="3.19"/><circle cx="335.0" cy="55.0" r="2.99"/><circle cx="345.0" cy="55.0" r="3.04"/><circle cx="355.0" cy="55.0" r="2.87"/><circle cx="365.0" cy="55.0" r="2.73"/><circle cx="375.0" cy="55.0" r="2.97"/><circle cx="385.0" cy="55.0" r="3.27"/><circle cx="395.0" cy="55.0" r="3.16"/><circle cx="405.0" cy="55.0" r="3.04"/><circle cx="415.0" cy="55.0" r="2.03"/><circle cx="45.0" cy="65.0" r="1.88"/><circle cx="55.0" cy="65.0" r="2.8"/><circle cx="65.0" cy="65.0" r="3.72"/><circle cx="75.0" cy="65.0" r="3.77"/><circle cx="85.0" cy="65.0" r="3.78"/><circle cx="95.0" cy="65.0" r="3.82"/><circle cx="105.0" cy="65.0" r="3.9"/><circle cx="115.0" cy="65.0" r="3.77"/><circle cx="125.0" cy="65.0" r="3.46"/><circle cx="135.0" cy="65.0" r="3.16"/><circle cx="145.0" cy="65.0" r="3.31"/><circle cx="155.0" cy="65.0" r="3.31"/><circle cx="165.0" cy="65.0" r="3.39"/><circle cx="175.0" cy="65.0" r="3.5"/><circle cx="185.0" cy="65.0" r="3.82"/><circle cx="195.0" cy="65.0" r="4.0"/><circle cx="205.0" cy="65.0" r="4.07"/><circle cx="215.0" cy="65.0" r="3.94"/><circle cx="225.0" cy="65.0" r="3.62"/><circle cx="235.0" cy="65.0" r="3.16"/><circle cx="245.0" cy="65.0" r="2.9"/><circle cx="255.0" cy="65.0" r="2.95"/><circle cx="265.0" cy="65.0" r="2.94"/><circle cx="275.0" cy="65.0" r="2.6"/><circle cx="285.0" cy="65.0" r="2.0"/><circle cx="295.0" cy="65.0" r="1.77"/><circle cx="305.0" cy="65.0" r="1.71"/><circle cx="315.0" cy="65.0" r="2.49"/><circle cx="325.0" cy="65.0" r="2.82"/><circle cx="335.0" cy="65.0" r="2.68"/><circle cx="345.0" cy="65.0" r="2.32"/><circle cx="355.0" cy="65.0" r="2.12"/><circle cx="365.0" cy="65.0" r="2.17"/><circle cx="375.0" cy="65.0" r="2.89"/><circle cx="385.0" cy="65.0" r="3.28"/><circle cx="395.0" cy="65.0" r="3.25"/><circle cx="405.0" cy="65.0" r="3.21"/><circle cx="415.0" cy="65.0" r="3.1"/><circle cx="425.0" cy="65.0" r="1.66"/><circle cx="25.0" cy="75.0" r="1.5"/><circle cx="35.0" cy="75.0" r="2.66"/><circle cx="45.0" cy="75.0" r="3.6"/><circle cx="55.0" cy="75.0" r="3.76"/><circle cx="65.0" cy="75.0" r="3.69"/><circle cx="75.0" cy="75.0" r="3.65"/><circle cx="85.0" cy="75.0" r="3.74"/><circle cx="95.0" cy="75.0" r="3.73"/><circle cx="105.0" cy="75.0" r="3.65"/><circle cx="115.0" cy="75.0" r="3.37"/><circle cx="125.0" cy="75.0" r="3.21"/><circle cx="135.0" cy="75.0" r="2.99"/><circle cx="145.0" cy="75.0" r="2.82"/><circle cx="155.0" cy="75.0" r="2.45"/><circle cx="165.0" cy="75.0" r="2.9"/><circle cx="175.0" cy="75.0" r="3.12"/><circle cx="185.0" cy="75.0" r="3.49"/><circle cx="195.0" cy="75.0" r="3.72"/><circle cx="205.0" cy="75.0" r="3.82"/><circle cx="215.0" cy="75.0" r="3.78"/><circle cx="225.0" cy="75.0" r="3.51"/><circle cx="235.0" cy="75.0" r="3.39"/><circle cx="245.0" cy="75.0" r="2.95"/><circle cx="255.0" cy="75.0" r="2.69"/><circle cx="265.0" cy="75.0" r="2.26"/><circle cx="275.0" cy="75.0" r="1.74"/><circle cx="285.0" cy="75.0" r="1.69"/><circle cx="295.0" cy="75.0" r="1.43"/><circle cx="305.0" cy="75.0" r="2.36"/><circle cx="315.0" cy="75.0" r="2.38"/><circle cx="325.0" cy="75.0" r="1.85"/><circle cx="365.0" cy="75.0" r="2.47"/><circle cx="375.0" cy="75.0" r="2.97"/><circle cx="385.0" cy="75.0" r="2.97"/><circle cx="395.0" cy="75.0" r="2.89"/><circle cx="405.0" cy="75.0" r="2.85"/><circle cx="415.0" cy="75.0" r="3.24"/><circle cx="425.0" cy="75.0" r="2.71"/><circle cx="15.0" cy="85.0" r="2.5"/><circle cx="25.0" cy="85.0" r="3.43"/><circle cx="35.0" cy="85.0" r="3.58"/><circle cx="45.0" cy="85.0" r="3.69"/><circle cx="55.0" cy="85.0" r="3.69"/><circle cx="65.0" cy="85.0" r="3.72"/><circle cx="75.0" cy="85.0" r="3.68"/><circle cx="85.0" cy="85.0" r="3.57"/><circle cx="95.0" cy="85.0" r="3.22"/><circle cx="105.0" cy="85.0" r="2.97"/><circle cx="115.0" cy="85.0" r="2.62"/><circle cx="125.0" cy="85.0" r="2.15"/><circle cx="135.0" cy="85.0" r="1.71"/><circle cx="145.0" cy="85.0" r="1.47"/><circle cx="165.0" cy="85.0" r="2.28"/><circle cx="175.0" cy="85.0" r="2.43"/><circle cx="185.0" cy="85.0" r="2.62"/><circle cx="195.0" cy="85.0" r="3.4"/><circle cx="205.0" cy="85.0" r="3.44"/><circle cx="215.0" cy="85.0" r="3.51"/><circle cx="225.0" cy="85.0" r="3.47"/><circle cx="235.0" cy="85.0" r="3.44"/><circle cx="245.0" cy="85.0" r="3.18"/><circle cx="255.0" cy="85.0" r="2.82"/><circle cx="265.0" cy="85.0" r="2.34"/><circle cx="275.0" cy="85.0" r="1.83"/><circle cx="285.0" cy="85.0" r="2.43"/><circle cx="295.0" cy="85.0" r="1.47"/><circle cx="305.0" cy="85.0" r="1.96"/><circle cx="315.0" cy="85.0" r="1.5"/><circle cx="365.0" cy="85.0" r="3.24"/><circle cx="375.0" cy="85.0" r="3.68"/><circle cx="385.0" cy="85.0" r="3.64"/><circle cx="395.0" cy="85.0" r="3.19"/><circle cx="405.0" cy="85.0" r="2.89"/><circle cx="415.0" cy="85.0" r="3.0"/><circle cx="425.0" cy="85.0" r="2.94"/><circle cx="435.0" cy="85.0" r="2.41"/><circle cx="5.0" cy="95.0" r="2.19"/><circle cx="15.0" cy="95.0" r="3.73"/><circle cx="25.0" cy="95.0" r="3.6"/><circle cx="35.0" cy="95.0" r="3.7"/><circle cx="45.0" cy="95.0" r="3.78"/><circle cx="55.0" cy="95.0" r="3.76"/><circle cx="65.0" cy="95.0" r="3.65"/><circle cx="75.0" cy="95.0" r="3.49"/><circle cx="85.0" cy="95.0" r="2.99"/><circle cx="95.0" cy="95.0" r="2.52"/><circle cx="105.0" cy="95.0" r="2.1"/><circle cx="115.0" cy="95.0" r="1.53"/><circle cx="165.0" cy="95.0" r="1.74"/><circle cx="175.0" cy="95.0" r="1.77"/><circle cx="195.0" cy="95.0" r="2.3"/><circle cx="205.0" cy="95.0" r="3.47"/><circle cx="215.0" cy="95.0" r="3.57"/><circle cx="225.0" cy="95.0" r="3.51"/><circle cx="235.0" cy="95.0" r="3.56"/><circle cx="245.0" cy="95.0" r="3.56"/><circle cx="255.0" cy="95.0" r="3.34"/><circle cx="265.0" cy="95.0" r="2.92"/><circle cx="275.0" cy="95.0" r="2.54"/><circle cx="285.0" cy="95.0" r="2.52"/><circle cx="295.0" cy="95.0" r="1.43"/><circle cx="355.0" cy="95.0" r="1.66"/><circle cx="365.0" cy="95.0" r="2.73"/><circle cx="375.0" cy="95.0" r="3.6"/><circle cx="385.0" cy="95.0" r="3.89"/><circle cx="395.0" cy="95.0" r="3.9"/><circle cx="405.0" cy="95.0" r="3.36"/><circle cx="415.0" cy="95.0" r="2.45"/><circle cx="425.0" cy="95.0" r="2.99"/><circle cx="435.0" cy="95.0" r="3.18"/><circle cx="445.0" cy="95.0" r="2.34"/><circle cx="5.0" cy="105.0" r="2.17"/><circle cx="15.0" cy="105.0" r="3.7"/><circle cx="25.0" cy="105.0" r="3.73"/><circle cx="35.0" cy="105.0" r="3.74"/><circle cx="45.0" cy="105.0" r="3.68"/><circle cx="55.0" cy="105.0" r="3.37"/><circle cx="65.0" cy="105.0" r="3.05"/><circle cx="75.0" cy="105.0" r="2.56"/><circle cx="85.0" cy="105.0" r="2.28"/><circle cx="95.0" cy="105.0" r="1.69"/><circle cx="155.0" cy="105.0" r="1.77"/><circle cx="165.0" cy="105.0" r="1.57"/><circle cx="205.0" cy="105.0" r="2.21"/><circle cx="215.0" cy="105.0" r="3.4"/><circle cx="225.0" cy="105.0" r="3.42"/><circle cx="235.0" cy="105.0" r="3.44"/><circle cx="245.0" cy="105.0" r="3.54"/><circle cx="255.0" cy="105.0" r="3.64"/><circle cx="265.0" cy="105.0" r="3.65"/><circle cx="275.0" cy="105.0" r="3.18"/><circle cx="285.0" cy="105.0" r="2.6"/><circle cx="295.0" cy="105.0" r="1.6"/><circle cx="305.0" cy="105.0" r="1.5"/><circle cx="355.0" cy="105.0" r="1.63"/><circle cx="365.0" cy="105.0" r="2.62"/><circle cx="375.0" cy="105.0" r="2.99"/><circle cx="385.0" cy="105.0" r="3.51"/><circle cx="395.0" cy="105.0" r="3.91"/><circle cx="405.0" cy="105.0" r="3.76"/><circle cx="425.0" cy="105.0" r="2.45"/><circle cx="435.0" cy="105.0" r="3.12"/><circle cx="445.0" cy="105.0" r="2.8"/><circle cx="455.0" cy="105.0" r="1.5"/><circle cx="5.0" cy="115.0" r="2.21"/><circle cx="15.0" cy="115.0" r="3.76"/><circle cx="25.0" cy="115.0" r="3.69"/><circle cx="35.0" cy="115.0" r="3.34"/><circle cx="45.0" cy="115.0" r="3.02"/><circle cx="55.0" cy="115.0" r="2.89"/><circle cx="65.0" cy="115.0" r="2.5"/><circle cx="75.0" cy="115.0" r="2.08"/><circle cx="85.0" cy="115.0" r="1.69"/><circle cx="145.0" cy="115.0" r="1.93"/><circle cx="155.0" cy="115.0" r="1.9"/><circle cx="215.0" cy="115.0" r="1.53"/><circle cx="225.0" cy="115.0" r="2.6"/><circle cx="235.0" cy="115.0" r="3.08"/><circle cx="245.0" cy="115.0" r="3.12"/><circle cx="255.0" cy="115.0" r="3.5"/><circle cx="265.0" cy="115.0" r="3.72"/><circle cx="275.0" cy="115.0" r="3.64"/><circle cx="285.0" cy="115.0" r="2.6"/><circle cx="295.0" cy="115.0" r="1.66"/><circle cx="305.0" cy="115.0" r="1.83"/><circle cx="315.0" cy="115.0" r="1.71"/><circle cx="325.0" cy="115.0" r="1.5"/><circle cx="365.0" cy="115.0" r="1.8"/><circle cx="375.0" cy="115.0" r="2.64"/><circle cx="385.0" cy="115.0" r="3.21"/><circle cx="395.0" cy="115.0" r="3.76"/><circle cx="405.0" cy="115.0" r="3.89"/><circle cx="415.0" cy="115.0" r="2.84"/><circle cx="435.0" cy="115.0" r="2.34"/><circle cx="445.0" cy="115.0" r="2.5"/><circle cx="455.0" cy="115.0" r="2.08"/><circle cx="5.0" cy="125.0" r="2.1"/><circle cx="15.0" cy="125.0" r="3.44"/><circle cx="25.0" cy="125.0" r="3.19"/><circle cx="35.0" cy="125.0" r="2.77"/><circle cx="45.0" cy="125.0" r="2.34"/><circle cx="55.0" cy="125.0" r="1.96"/><circle cx="65.0" cy="125.0" r="1.88"/><circle cx="75.0" cy="125.0" r="1.5"/><circle cx="135.0" cy="125.0" r="1.74"/><circle cx="145.0" cy="125.0" r="1.8"/><circle cx="245.0" cy="125.0" r="1.63"/><circle cx="255.0" cy="125.0" r="1.98"/><circle cx="265.0" cy="125.0" r="2.64"/><circle cx="275.0" cy="125.0" r="2.38"/><circle cx="285.0" cy="125.0" r="1.8"/><circle cx="295.0" cy="125.0" r="1.47"/><circle cx="305.0" cy="125.0" r="1.88"/><circle cx="315.0" cy="125.0" r="2.05"/><circle cx="325.0" cy="125.0" r="2.26"/><circle cx="335.0" cy="125.0" r="2.26"/><circle cx="345.0" cy="125.0" r="2.24"/><circle cx="375.0" cy="125.0" r="1.47"/><circle cx="385.0" cy="125.0" r="2.52"/><circle cx="395.0" cy="125.0" r="3.05"/><circle cx="405.0" cy="125.0" r="3.87"/><circle cx="415.0" cy="125.0" r="3.6"/><circle cx="5.0" cy="135.0" r="1.85"/><circle cx="15.0" cy="135.0" r="2.85"/><circle cx="25.0" cy="135.0" r="2.49"/><circle cx="35.0" cy="135.0" r="2.05"/><circle cx="45.0" cy="135.0" r="1.57"/><circle cx="135.0" cy="135.0" r="1.63"/><circle cx="305.0" cy="135.0" r="1.63"/><circle cx="315.0" cy="135.0" r="2.03"/><circle cx="325.0" cy="135.0" r="2.28"/><circle cx="335.0" cy="135.0" r="2.17"/><circle cx="345.0" cy="135.0" r="2.49"/><circle cx="355.0" cy="135.0" r="2.34"/><circle cx="395.0" cy="135.0" r="2.1"/><circle cx="405.0" cy="135.0" r="3.18"/><circle cx="415.0" cy="135.0" r="3.9"/><circle cx="425.0" cy="135.0" r="1.93"/><circle cx="15.0" cy="145.0" r="2.34"/><circle cx="25.0" cy="145.0" r="1.93"/><circle cx="35.0" cy="145.0" r="1.6"/><circle cx="125.0" cy="145.0" r="1.47"/><circle cx="325.0" cy="145.0" r="1.9"/><circle cx="335.0" cy="145.0" r="2.47"/><circle cx="345.0" cy="145.0" r="2.58"/><circle cx="355.0" cy="145.0" r="2.73"/><circle cx="365.0" cy="145.0" r="2.56"/><circle cx="405.0" cy="145.0" r="2.56"/><circle cx="415.0" cy="145.0" r="3.85"/><circle cx="425.0" cy="145.0" r="3.4"/><circle cx="15.0" cy="155.0" r="1.83"/><circle cx="25.0" cy="155.0" r="1.5"/><circle cx="325.0" cy="155.0" r="1.47"/><circle cx="335.0" cy="155.0" r="3.8"/><circle cx="345.0" cy="155.0" r="2.9"/><circle cx="355.0" cy="155.0" r="3.05"/><circle cx="365.0" cy="155.0" r="3.02"/><circle cx="395.0" cy="155.0" r="1.66"/><circle cx="405.0" cy="155.0" r="2.99"/><circle cx="415.0" cy="155.0" r="2.95"/><circle cx="425.0" cy="155.0" r="3.34"/><circle cx="335.0" cy="165.0" r="3.85"/><circle cx="345.0" cy="165.0" r="2.45"/><circle cx="355.0" cy="165.0" r="2.45"/><circle cx="365.0" cy="165.0" r="2.08"/><circle cx="405.0" cy="165.0" r="2.73"/>';
-
-const RIGHT_DOTS =
-  '<circle cx="445.0" cy="15.0" r="2.43"/><circle cx="455.0" cy="15.0" r="3.33"/><circle cx="425.0" cy="25.0" r="2.08"/><circle cx="435.0" cy="25.0" r="3.64"/><circle cx="445.0" cy="25.0" r="4.01"/><circle cx="455.0" cy="25.0" r="3.6"/><circle cx="405.0" cy="35.0" r="2.17"/><circle cx="415.0" cy="35.0" r="3.51"/><circle cx="425.0" cy="35.0" r="4.02"/><circle cx="435.0" cy="35.0" r="3.95"/><circle cx="445.0" cy="35.0" r="4.07"/><circle cx="455.0" cy="35.0" r="3.6"/><circle cx="365.0" cy="45.0" r="2.32"/><circle cx="375.0" cy="45.0" r="2.92"/><circle cx="385.0" cy="45.0" r="3.65"/><circle cx="395.0" cy="45.0" r="3.85"/><circle cx="405.0" cy="45.0" r="4.03"/><circle cx="415.0" cy="45.0" r="3.85"/><circle cx="425.0" cy="45.0" r="4.02"/><circle cx="435.0" cy="45.0" r="3.92"/><circle cx="445.0" cy="45.0" r="3.99"/><circle cx="455.0" cy="45.0" r="3.47"/><circle cx="335.0" cy="55.0" r="3.31"/><circle cx="345.0" cy="55.0" r="3.96"/><circle cx="355.0" cy="55.0" r="3.96"/><circle cx="365.0" cy="55.0" r="4.08"/><circle cx="375.0" cy="55.0" r="3.95"/><circle cx="385.0" cy="55.0" r="4.03"/><circle cx="395.0" cy="55.0" r="3.94"/><circle cx="405.0" cy="55.0" r="4.02"/><circle cx="415.0" cy="55.0" r="3.92"/><circle cx="425.0" cy="55.0" r="4.09"/><circle cx="435.0" cy="55.0" r="3.96"/><circle cx="445.0" cy="55.0" r="4.03"/><circle cx="455.0" cy="55.0" r="3.54"/><circle cx="295.0" cy="65.0" r="1.47"/><circle cx="305.0" cy="65.0" r="2.84"/><circle cx="315.0" cy="65.0" r="3.69"/><circle cx="325.0" cy="65.0" r="4.02"/><circle cx="335.0" cy="65.0" r="3.92"/><circle cx="345.0" cy="65.0" r="4.0"/><circle cx="355.0" cy="65.0" r="3.89"/><circle cx="365.0" cy="65.0" r="3.96"/><circle cx="375.0" cy="65.0" r="3.72"/><circle cx="385.0" cy="65.0" r="3.82"/><circle cx="395.0" cy="65.0" r="3.66"/><circle cx="405.0" cy="65.0" r="3.76"/><circle cx="415.0" cy="65.0" r="3.68"/><circle cx="425.0" cy="65.0" r="3.89"/><circle cx="435.0" cy="65.0" r="3.8"/><circle cx="445.0" cy="65.0" r="3.89"/><circle cx="455.0" cy="65.0" r="3.37"/><circle cx="275.0" cy="75.0" r="3.19"/><circle cx="285.0" cy="75.0" r="3.94"/><circle cx="295.0" cy="75.0" r="3.96"/><circle cx="305.0" cy="75.0" r="4.08"/><circle cx="315.0" cy="75.0" r="3.95"/><circle cx="325.0" cy="75.0" r="4.05"/><circle cx="335.0" cy="75.0" r="3.91"/><circle cx="345.0" cy="75.0" r="3.77"/><circle cx="355.0" cy="75.0" r="3.44"/><circle cx="365.0" cy="75.0" r="3.53"/><circle cx="375.0" cy="75.0" r="3.33"/><circle cx="385.0" cy="75.0" r="3.51"/><circle cx="395.0" cy="75.0" r="3.4"/><circle cx="405.0" cy="75.0" r="3.62"/><circle cx="415.0" cy="75.0" r="3.49"/><circle cx="425.0" cy="75.0" r="3.62"/><circle cx="435.0" cy="75.0" r="3.49"/><circle cx="445.0" cy="75.0" r="3.61"/><circle cx="455.0" cy="75.0" r="3.15"/><circle cx="225.0" cy="85.0" r="1.47"/><circle cx="235.0" cy="85.0" r="1.57"/><circle cx="245.0" cy="85.0" r="2.24"/><circle cx="255.0" cy="85.0" r="3.16"/><circle cx="265.0" cy="85.0" r="3.54"/><circle cx="275.0" cy="85.0" r="3.6"/><circle cx="285.0" cy="85.0" r="3.94"/><circle cx="295.0" cy="85.0" r="3.95"/><circle cx="305.0" cy="85.0" r="4.05"/><circle cx="315.0" cy="85.0" r="3.91"/><circle cx="325.0" cy="85.0" r="3.9"/><circle cx="335.0" cy="85.0" r="3.46"/><circle cx="345.0" cy="85.0" r="3.33"/><circle cx="355.0" cy="85.0" r="3.08"/><circle cx="365.0" cy="85.0" r="3.19"/><circle cx="375.0" cy="85.0" r="3.12"/><circle cx="385.0" cy="85.0" r="3.34"/><circle cx="395.0" cy="85.0" r="3.25"/><circle cx="405.0" cy="85.0" r="3.46"/><circle cx="415.0" cy="85.0" r="3.31"/><circle cx="425.0" cy="85.0" r="3.51"/><circle cx="435.0" cy="85.0" r="3.34"/><circle cx="445.0" cy="85.0" r="3.49"/><circle cx="455.0" cy="85.0" r="3.12"/><circle cx="205.0" cy="95.0" r="1.93"/><circle cx="215.0" cy="95.0" r="3.28"/><circle cx="225.0" cy="95.0" r="3.44"/><circle cx="235.0" cy="95.0" r="3.49"/><circle cx="245.0" cy="95.0" r="3.78"/><circle cx="255.0" cy="95.0" r="3.44"/><circle cx="265.0" cy="95.0" r="3.27"/><circle cx="275.0" cy="95.0" r="3.58"/><circle cx="285.0" cy="95.0" r="3.87"/><circle cx="295.0" cy="95.0" r="3.92"/><circle cx="305.0" cy="95.0" r="3.89"/><circle cx="315.0" cy="95.0" r="3.42"/><circle cx="325.0" cy="95.0" r="3.28"/><circle cx="335.0" cy="95.0" r="3.04"/><circle cx="345.0" cy="95.0" r="3.12"/><circle cx="355.0" cy="95.0" r="2.99"/><circle cx="365.0" cy="95.0" r="3.1"/><circle cx="375.0" cy="95.0" r="3.02"/><circle cx="385.0" cy="95.0" r="3.25"/><circle cx="395.0" cy="95.0" r="3.1"/><circle cx="405.0" cy="95.0" r="3.27"/><circle cx="415.0" cy="95.0" r="3.15"/><circle cx="425.0" cy="95.0" r="3.36"/><circle cx="435.0" cy="95.0" r="3.16"/><circle cx="445.0" cy="95.0" r="3.36"/><circle cx="455.0" cy="95.0" r="3.04"/><circle cx="175.0" cy="105.0" r="1.57"/><circle cx="185.0" cy="105.0" r="3.47"/><circle cx="195.0" cy="105.0" r="3.81"/><circle cx="205.0" cy="105.0" r="3.77"/><circle cx="215.0" cy="105.0" r="3.66"/><circle cx="225.0" cy="105.0" r="3.65"/><circle cx="235.0" cy="105.0" r="3.77"/><circle cx="245.0" cy="105.0" r="3.77"/><circle cx="255.0" cy="105.0" r="3.53"/><circle cx="265.0" cy="105.0" r="3.54"/><circle cx="275.0" cy="105.0" r="3.56"/><circle cx="285.0" cy="105.0" r="3.64"/><circle cx="295.0" cy="105.0" r="3.56"/><circle cx="305.0" cy="105.0" r="3.16"/><circle cx="315.0" cy="105.0" r="3.02"/><circle cx="325.0" cy="105.0" r="3.0"/><circle cx="335.0" cy="105.0" r="2.77"/><circle cx="345.0" cy="105.0" r="3.16"/><circle cx="355.0" cy="105.0" r="3.05"/><circle cx="365.0" cy="105.0" r="3.21"/><circle cx="375.0" cy="105.0" r="3.07"/><circle cx="385.0" cy="105.0" r="3.28"/><circle cx="395.0" cy="105.0" r="3.08"/><circle cx="405.0" cy="105.0" r="3.27"/><circle cx="415.0" cy="105.0" r="3.08"/><circle cx="425.0" cy="105.0" r="3.27"/><circle cx="435.0" cy="105.0" r="3.08"/><circle cx="445.0" cy="105.0" r="3.27"/><circle cx="455.0" cy="105.0" r="3.0"/><circle cx="155.0" cy="115.0" r="1.8"/><circle cx="165.0" cy="115.0" r="3.02"/><circle cx="175.0" cy="115.0" r="3.99"/><circle cx="185.0" cy="115.0" r="4.09"/><circle cx="195.0" cy="115.0" r="3.95"/><circle cx="205.0" cy="115.0" r="3.83"/><circle cx="215.0" cy="115.0" r="3.8"/><circle cx="225.0" cy="115.0" r="3.65"/><circle cx="235.0" cy="115.0" r="3.76"/><circle cx="245.0" cy="115.0" r="3.72"/><circle cx="255.0" cy="115.0" r="3.56"/><circle cx="265.0" cy="115.0" r="3.42"/><circle cx="275.0" cy="115.0" r="3.05"/><circle cx="285.0" cy="115.0" r="2.95"/><circle cx="295.0" cy="115.0" r="2.43"/><circle cx="305.0" cy="115.0" r="2.41"/><circle cx="315.0" cy="115.0" r="2.68"/><circle cx="325.0" cy="115.0" r="2.84"/><circle cx="335.0" cy="115.0" r="2.56"/><circle cx="345.0" cy="115.0" r="3.22"/><circle cx="355.0" cy="115.0" r="3.1"/><circle cx="365.0" cy="115.0" r="3.21"/><circle cx="375.0" cy="115.0" r="3.15"/><circle cx="385.0" cy="115.0" r="3.37"/><circle cx="395.0" cy="115.0" r="3.22"/><circle cx="405.0" cy="115.0" r="3.42"/><circle cx="415.0" cy="115.0" r="3.22"/><circle cx="425.0" cy="115.0" r="3.34"/><circle cx="435.0" cy="115.0" r="3.07"/><circle cx="445.0" cy="115.0" r="3.18"/><circle cx="455.0" cy="115.0" r="2.89"/><circle cx="125.0" cy="125.0" r="1.66"/><circle cx="135.0" cy="125.0" r="2.28"/><circle cx="145.0" cy="125.0" r="3.3"/><circle cx="155.0" cy="125.0" r="3.7"/><circle cx="165.0" cy="125.0" r="3.97"/><circle cx="175.0" cy="125.0" r="4.07"/><circle cx="185.0" cy="125.0" r="4.03"/><circle cx="195.0" cy="125.0" r="3.69"/><circle cx="205.0" cy="125.0" r="3.78"/><circle cx="215.0" cy="125.0" r="3.66"/><circle cx="225.0" cy="125.0" r="3.56"/><circle cx="235.0" cy="125.0" r="3.49"/><circle cx="245.0" cy="125.0" r="3.37"/><circle cx="255.0" cy="125.0" r="3.3"/><circle cx="265.0" cy="125.0" r="3.0"/><circle cx="275.0" cy="125.0" r="2.75"/><circle cx="285.0" cy="125.0" r="2.52"/><circle cx="295.0" cy="125.0" r="1.69"/><circle cx="305.0" cy="125.0" r="1.93"/><circle cx="315.0" cy="125.0" r="2.45"/><circle cx="325.0" cy="125.0" r="2.77"/><circle cx="335.0" cy="125.0" r="2.87"/><circle cx="345.0" cy="125.0" r="3.31"/><circle cx="355.0" cy="125.0" r="3.19"/><circle cx="365.0" cy="125.0" r="3.27"/><circle cx="375.0" cy="125.0" r="3.28"/><circle cx="385.0" cy="125.0" r="3.49"/><circle cx="395.0" cy="125.0" r="3.28"/><circle cx="405.0" cy="125.0" r="3.36"/><circle cx="415.0" cy="125.0" r="3.24"/><circle cx="425.0" cy="125.0" r="3.25"/><circle cx="435.0" cy="125.0" r="2.97"/><circle cx="445.0" cy="125.0" r="3.04"/><circle cx="455.0" cy="125.0" r="2.71"/><circle cx="65.0" cy="135.0" r="1.93"/><circle cx="75.0" cy="135.0" r="2.26"/><circle cx="85.0" cy="135.0" r="2.52"/><circle cx="95.0" cy="135.0" r="2.84"/><circle cx="105.0" cy="135.0" r="3.42"/><circle cx="115.0" cy="135.0" r="3.9"/><circle cx="125.0" cy="135.0" r="4.22"/><circle cx="135.0" cy="135.0" r="4.09"/><circle cx="145.0" cy="135.0" r="4.05"/><circle cx="155.0" cy="135.0" r="3.99"/><circle cx="165.0" cy="135.0" r="3.97"/><circle cx="175.0" cy="135.0" r="3.89"/><circle cx="185.0" cy="135.0" r="3.76"/><circle cx="195.0" cy="135.0" r="3.92"/><circle cx="205.0" cy="135.0" r="3.61"/><circle cx="215.0" cy="135.0" r="3.62"/><circle cx="225.0" cy="135.0" r="3.56"/><circle cx="235.0" cy="135.0" r="3.28"/><circle cx="245.0" cy="135.0" r="3.22"/><circle cx="255.0" cy="135.0" r="3.21"/><circle cx="265.0" cy="135.0" r="2.97"/><circle cx="275.0" cy="135.0" r="2.62"/><circle cx="285.0" cy="135.0" r="1.98"/><circle cx="295.0" cy="135.0" r="1.47"/><circle cx="315.0" cy="135.0" r="2.0"/><circle cx="325.0" cy="135.0" r="2.5"/><circle cx="335.0" cy="135.0" r="2.56"/><circle cx="345.0" cy="135.0" r="2.89"/><circle cx="355.0" cy="135.0" r="2.77"/><circle cx="365.0" cy="135.0" r="2.9"/><circle cx="375.0" cy="135.0" r="2.78"/><circle cx="385.0" cy="135.0" r="2.82"/><circle cx="395.0" cy="135.0" r="2.49"/><circle cx="405.0" cy="135.0" r="2.64"/><circle cx="415.0" cy="135.0" r="2.54"/><circle cx="425.0" cy="135.0" r="2.58"/><circle cx="435.0" cy="135.0" r="2.3"/><circle cx="445.0" cy="135.0" r="2.32"/><circle cx="455.0" cy="135.0" r="2.03"/><circle cx="35.0" cy="145.0" r="1.77"/><circle cx="45.0" cy="145.0" r="2.5"/><circle cx="55.0" cy="145.0" r="3.66"/><circle cx="65.0" cy="145.0" r="3.77"/><circle cx="75.0" cy="145.0" r="3.6"/><circle cx="85.0" cy="145.0" r="3.85"/><circle cx="95.0" cy="145.0" r="3.73"/><circle cx="105.0" cy="145.0" r="3.77"/><circle cx="115.0" cy="145.0" r="3.73"/><circle cx="125.0" cy="145.0" r="3.87"/><circle cx="135.0" cy="145.0" r="3.7"/><circle cx="145.0" cy="145.0" r="3.64"/><circle cx="155.0" cy="145.0" r="3.43"/><circle cx="165.0" cy="145.0" r="3.49"/><circle cx="175.0" cy="145.0" r="3.81"/><circle cx="185.0" cy="145.0" r="4.15"/><circle cx="195.0" cy="145.0" r="3.95"/><circle cx="205.0" cy="145.0" r="3.53"/><circle cx="215.0" cy="145.0" r="3.43"/><circle cx="225.0" cy="145.0" r="3.22"/><circle cx="235.0" cy="145.0" r="3.07"/><circle cx="245.0" cy="145.0" r="3.05"/><circle cx="255.0" cy="145.0" r="3.05"/><circle cx="265.0" cy="145.0" r="2.66"/><circle cx="275.0" cy="145.0" r="1.96"/><circle cx="285.0" cy="145.0" r="1.66"/><circle cx="295.0" cy="145.0" r="1.43"/><circle cx="325.0" cy="145.0" r="1.47"/><circle cx="335.0" cy="145.0" r="1.43"/><circle cx="345.0" cy="145.0" r="1.9"/><circle cx="355.0" cy="145.0" r="1.71"/><circle cx="365.0" cy="145.0" r="1.71"/><circle cx="375.0" cy="145.0" r="1.74"/><circle cx="385.0" cy="145.0" r="1.83"/><circle cx="395.0" cy="145.0" r="1.69"/><circle cx="405.0" cy="145.0" r="1.8"/><circle cx="415.0" cy="145.0" r="1.69"/><circle cx="425.0" cy="145.0" r="1.74"/><circle cx="435.0" cy="145.0" r="1.6"/><circle cx="445.0" cy="145.0" r="1.69"/><circle cx="455.0" cy="145.0" r="1.5"/><circle cx="15.0" cy="155.0" r="2.05"/><circle cx="25.0" cy="155.0" r="3.13"/><circle cx="35.0" cy="155.0" r="3.53"/><circle cx="45.0" cy="155.0" r="3.44"/><circle cx="55.0" cy="155.0" r="2.99"/><circle cx="65.0" cy="155.0" r="2.82"/><circle cx="75.0" cy="155.0" r="2.52"/><circle cx="85.0" cy="155.0" r="2.82"/><circle cx="95.0" cy="155.0" r="2.82"/><circle cx="105.0" cy="155.0" r="2.89"/><circle cx="115.0" cy="155.0" r="2.75"/><circle cx="125.0" cy="155.0" r="3.0"/><circle cx="135.0" cy="155.0" r="2.94"/><circle cx="145.0" cy="155.0" r="2.94"/><circle cx="155.0" cy="155.0" r="2.64"/><circle cx="165.0" cy="155.0" r="3.05"/><circle cx="175.0" cy="155.0" r="4.13"/><circle cx="185.0" cy="155.0" r="4.3"/><circle cx="195.0" cy="155.0" r="4.07"/><circle cx="205.0" cy="155.0" r="3.62"/><circle cx="215.0" cy="155.0" r="3.39"/><circle cx="225.0" cy="155.0" r="3.02"/><circle cx="235.0" cy="155.0" r="2.8"/><circle cx="245.0" cy="155.0" r="2.94"/><circle cx="255.0" cy="155.0" r="2.78"/><circle cx="265.0" cy="155.0" r="2.32"/><circle cx="275.0" cy="155.0" r="1.69"/><circle cx="285.0" cy="155.0" r="1.69"/><circle cx="295.0" cy="155.0" r="1.63"/><circle cx="305.0" cy="155.0" r="1.53"/><circle cx="365.0" cy="155.0" r="1.6"/><circle cx="375.0" cy="155.0" r="1.5"/><circle cx="385.0" cy="155.0" r="1.63"/><circle cx="395.0" cy="155.0" r="1.43"/><circle cx="405.0" cy="155.0" r="1.5"/><circle cx="5.0" cy="165.0" r="2.3"/><circle cx="15.0" cy="165.0" r="3.22"/><circle cx="25.0" cy="165.0" r="2.92"/><circle cx="35.0" cy="165.0" r="2.12"/><circle cx="45.0" cy="165.0" r="2.1"/><circle cx="55.0" cy="165.0" r="1.74"/><circle cx="65.0" cy="165.0" r="1.53"/><circle cx="95.0" cy="165.0" r="1.57"/><circle cx="105.0" cy="165.0" r="1.83"/><circle cx="115.0" cy="165.0" r="1.63"/><circle cx="125.0" cy="165.0" r="2.0"/><circle cx="135.0" cy="165.0" r="2.21"/><circle cx="145.0" cy="165.0" r="2.17"/><circle cx="155.0" cy="165.0" r="2.26"/><circle cx="165.0" cy="165.0" r="3.74"/><circle cx="175.0" cy="165.0" r="3.97"/><circle cx="185.0" cy="165.0" r="4.07"/><circle cx="195.0" cy="165.0" r="3.91"/><circle cx="205.0" cy="165.0" r="3.81"/><circle cx="215.0" cy="165.0" r="3.22"/><circle cx="225.0" cy="165.0" r="2.43"/><circle cx="235.0" cy="165.0" r="2.28"/><circle cx="245.0" cy="165.0" r="2.75"/><circle cx="255.0" cy="165.0" r="2.38"/><circle cx="265.0" cy="165.0" r="1.77"/><circle cx="285.0" cy="165.0" r="1.47"/><circle cx="295.0" cy="165.0" r="1.43"/><circle cx="15.0" cy="175.0" r="2.05"/><circle cx="25.0" cy="175.0" r="1.85"/><circle cx="135.0" cy="175.0" r="3.3"/><circle cx="145.0" cy="175.0" r="3.56"/><circle cx="155.0" cy="175.0" r="3.86"/><circle cx="165.0" cy="175.0" r="3.73"/><circle cx="175.0" cy="175.0" r="3.91"/><circle cx="185.0" cy="175.0" r="3.85"/><circle cx="195.0" cy="175.0" r="3.61"/><circle cx="205.0" cy="175.0" r="3.28"/><circle cx="215.0" cy="175.0" r="2.69"/><circle cx="225.0" cy="175.0" r="1.8"/><circle cx="235.0" cy="175.0" r="2.0"/><circle cx="245.0" cy="175.0" r="2.6"/><circle cx="255.0" cy="175.0" r="1.93"/><circle cx="295.0" cy="175.0" r="1.43"/><circle cx="125.0" cy="185.0" r="2.17"/><circle cx="135.0" cy="185.0" r="3.94"/><circle cx="145.0" cy="185.0" r="3.99"/><circle cx="155.0" cy="185.0" r="3.72"/><circle cx="165.0" cy="185.0" r="3.37"/><circle cx="175.0" cy="185.0" r="2.87"/><circle cx="185.0" cy="185.0" r="2.5"/><circle cx="195.0" cy="185.0" r="2.43"/><circle cx="205.0" cy="185.0" r="2.66"/><circle cx="215.0" cy="185.0" r="2.19"/><circle cx="235.0" cy="185.0" r="1.88"/><circle cx="245.0" cy="185.0" r="2.05"/><circle cx="115.0" cy="195.0" r="2.0"/><circle cx="125.0" cy="195.0" r="3.54"/><circle cx="135.0" cy="195.0" r="3.9"/><circle cx="145.0" cy="195.0" r="3.74"/><circle cx="155.0" cy="195.0" r="2.99"/><circle cx="165.0" cy="195.0" r="2.12"/><circle cx="175.0" cy="195.0" r="1.47"/><circle cx="195.0" cy="195.0" r="2.3"/><circle cx="205.0" cy="195.0" r="2.87"/><circle cx="215.0" cy="195.0" r="2.75"/><circle cx="225.0" cy="195.0" r="2.3"/><circle cx="235.0" cy="195.0" r="1.88"/><circle cx="245.0" cy="195.0" r="1.77"/><circle cx="255.0" cy="195.0" r="1.47"/><circle cx="105.0" cy="205.0" r="3.46"/><circle cx="115.0" cy="205.0" r="3.58"/><circle cx="125.0" cy="205.0" r="3.82"/><circle cx="135.0" cy="205.0" r="3.9"/><circle cx="145.0" cy="205.0" r="3.21"/><circle cx="155.0" cy="205.0" r="2.17"/><circle cx="185.0" cy="205.0" r="1.43"/><circle cx="195.0" cy="205.0" r="2.28"/><circle cx="205.0" cy="205.0" r="2.87"/><circle cx="215.0" cy="205.0" r="2.62"/><circle cx="225.0" cy="205.0" r="2.28"/><circle cx="235.0" cy="205.0" r="2.69"/><circle cx="245.0" cy="205.0" r="2.56"/><circle cx="255.0" cy="205.0" r="1.9"/><circle cx="95.0" cy="215.0" r="1.77"/><circle cx="105.0" cy="215.0" r="3.8"/><circle cx="115.0" cy="215.0" r="3.3"/><circle cx="125.0" cy="215.0" r="3.36"/><circle cx="135.0" cy="215.0" r="2.87"/><circle cx="145.0" cy="215.0" r="2.0"/><circle cx="155.0" cy="215.0" r="1.47"/><circle cx="195.0" cy="215.0" r="2.36"/><circle cx="205.0" cy="215.0" r="2.5"/><circle cx="215.0" cy="215.0" r="2.24"/><circle cx="225.0" cy="215.0" r="1.53"/><circle cx="235.0" cy="215.0" r="2.12"/><circle cx="245.0" cy="215.0" r="1.74"/><circle cx="105.0" cy="225.0" r="1.83"/><circle cx="115.0" cy="225.0" r="2.6"/><circle cx="125.0" cy="225.0" r="3.07"/><circle cx="135.0" cy="225.0" r="2.28"/><circle cx="145.0" cy="225.0" r="1.57"/><circle cx="195.0" cy="225.0" r="2.69"/><circle cx="205.0" cy="225.0" r="2.28"/><circle cx="115.0" cy="235.0" r="2.3"/><circle cx="125.0" cy="235.0" r="3.65"/><circle cx="135.0" cy="235.0" r="2.56"/><circle cx="145.0" cy="235.0" r="1.53"/><circle cx="195.0" cy="235.0" r="1.8"/><circle cx="205.0" cy="235.0" r="1.57"/><circle cx="115.0" cy="245.0" r="2.3"/><circle cx="125.0" cy="245.0" r="3.58"/><circle cx="135.0" cy="245.0" r="2.49"/><circle cx="145.0" cy="245.0" r="1.6"/><circle cx="195.0" cy="245.0" r="1.93"/><circle cx="205.0" cy="245.0" r="1.5"/><circle cx="115.0" cy="255.0" r="2.24"/><circle cx="125.0" cy="255.0" r="3.7"/><circle cx="135.0" cy="255.0" r="2.75"/><circle cx="145.0" cy="255.0" r="1.77"/><circle cx="195.0" cy="255.0" r="2.5"/><circle cx="205.0" cy="255.0" r="1.9"/><circle cx="115.0" cy="265.0" r="1.71"/><circle cx="125.0" cy="265.0" r="3.8"/><circle cx="135.0" cy="265.0" r="2.97"/><circle cx="145.0" cy="265.0" r="1.83"/><circle cx="195.0" cy="265.0" r="2.52"/><circle cx="205.0" cy="265.0" r="2.05"/><circle cx="125.0" cy="275.0" r="3.43"/><circle cx="135.0" cy="275.0" r="2.58"/><circle cx="125.0" cy="285.0" r="2.19"/><circle cx="135.0" cy="285.0" r="1.93"/>';
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 export const IntroOverlay: FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isTouching, setIsTouching] = useState(false);
   const [isFading, setIsFading] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
-  const [sparkFired, setSparkFired] = useState(false);
   const hasContacted = useRef(false);
 
   // Phase 1: fade hands in, then slide them together
@@ -64,11 +38,10 @@ export const IntroOverlay: FC = () => {
     return () => clearTimeout(t);
   }, [isFading]);
 
-  // Phase 2: fire spark + start fade when left hand finishes sliding
+  // Phase 2: start fade when left hand finishes sliding
   const handleLeftTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
     if (e.propertyName !== 'left' || hasContacted.current) return;
     hasContacted.current = true;
-    setSparkFired(true);
     setIsFading(true);
   };
 
@@ -80,99 +53,80 @@ export const IntroOverlay: FC = () => {
   if (isDismissed) return null;
 
   return (
-    <>
-      {/* React 19 hoists <style> to <head> automatically */}
-      <style>{`
-        @keyframes sparkPulse {
-          0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-          18%  { opacity: 1; }
-          100% { transform: translate(-50%, -50%) scale(13); opacity: 0; }
-        }
-      `}</style>
-
+    <div
+      role="dialog"
+      aria-label="Intro animation"
+      aria-modal="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: '#002FA7',
+        overflow: 'hidden',
+        zIndex: 100,
+        opacity: isFading ? 0 : 1,
+        transition: 'opacity 0.9s ease',
+      }}
+    >
+      {/* Left hand (Adam) — slides in from the left */}
       <div
-        role="dialog"
-        aria-label="Intro animation"
-        aria-modal="true"
+        onTransitionEnd={handleLeftTransitionEnd}
         style={{
-          position: 'fixed',
-          inset: 0,
-          background: '#002FA7',
-          overflow: 'hidden',
-          zIndex: 100,
-          opacity: isFading ? 0 : 1,
-          transition: 'opacity 0.9s ease',
+          position: 'absolute',
+          top: 'calc(65vh - 100vw * 2178 / 5250)',
+          left: isTouching ? '0' : `calc(-${SLIDE})`,
+          opacity: isVisible ? 1 : 0,
+          transition: 'left 2.5s cubic-bezier(.4,0,.2,1), opacity 0.5s ease',
+          willChange: 'left',
+          pointerEvents: 'none',
         }}
       >
-        {/* Left hand (Adam) — wrist at screen left, fingertip toward center */}
-        <div
-          onTransitionEnd={handleLeftTransitionEnd}
-          style={{
-            position: 'absolute',
-            top: LEFT_TOP,
-            left: isTouching ? SLIDE : '0',
-            opacity: isVisible ? 1 : 0,
-            transition: 'left 1.4s cubic-bezier(.4,0,.2,1), opacity 0.5s ease',
-            willChange: 'left',
-          }}
-        >
-          <svg
-            viewBox="0 0 460 170"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-            style={{ display: 'block', fill: '#EEFEEE', width: HAND_W, height: LEFT_H }}
-            dangerouslySetInnerHTML={{ __html: LEFT_DOTS }}
-          />
-        </div>
-
-        {/* Right hand (Creator) — wrist at screen right, fingertip toward center */}
-        <div
-          style={{
-            position: 'absolute',
-            top: RIGHT_TOP,
-            left: isTouching ? `calc(100vw - ${HAND_W} - ${SLIDE})` : `calc(100vw - ${HAND_W})`,
-            opacity: isVisible ? 1 : 0,
-            transition: 'left 1.4s cubic-bezier(.4,0,.2,1), opacity 0.5s ease',
-            willChange: 'left',
-          }}
-        >
-          <svg
-            viewBox="0 0 460 290"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-            style={{ display: 'block', fill: '#EEFEEE', width: HAND_W, height: RIGHT_H }}
-            dangerouslySetInnerHTML={{ __html: RIGHT_DOTS }}
-          />
-        </div>
-
-        {/* Spark at the fingertip meeting point */}
-        <div
+        <img
+          src={leftHand}
+          alt=""
           aria-hidden="true"
+          draggable={false}
           style={{
-            position: 'absolute',
-            left: SPARK_LEFT,
-            top: SPARK_TOP,
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            background:
-              'radial-gradient(circle, #fff 0%, #EEFEEE 40%, rgba(238,254,238,0) 72%)',
-            transform: 'translate(-50%, -50%) scale(0)',
-            opacity: 0,
-            animation: sparkFired ? 'sparkPulse 0.6s ease-out forwards' : 'none',
+            display: 'block',
+            width: '100vw',
+            height: 'calc(100vw * 4054 / 5250)',
           }}
         />
-
-        {/* Skip button */}
-        <button
-          onClick={dismiss}
-          className="fixed bottom-6 right-6 z-50 text-sm text-[#EEFEEE]/50 transition-colors duration-200 hover:text-[#EEFEEE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EEFEEE]/60"
-          aria-label="Skip intro"
-        >
-          Skip
-        </button>
       </div>
-    </>
+
+      {/* Right hand (Creator) — slides in from the right */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 'calc(65vh - 100vw * 2133 / 5250)',
+          left: isTouching ? '0' : SLIDE,
+          opacity: isVisible ? 1 : 0,
+          transition: 'left 2.5s cubic-bezier(.4,0,.2,1), opacity 0.5s ease',
+          willChange: 'left',
+          pointerEvents: 'none',
+        }}
+      >
+        <img
+          src={rightHand}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          style={{
+            display: 'block',
+            width: '100vw',
+            height: 'calc(100vw * 4054 / 5250)',
+          }}
+        />
+      </div>
+
+      {/* Skip button */}
+      <button
+        onClick={dismiss}
+        className="fixed bottom-6 right-6 z-50 text-sm text-[#EEFEEE]/50 transition-colors duration-200 hover:text-[#EEFEEE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EEFEEE]/60"
+        aria-label="Skip intro"
+      >
+        Skip
+      </button>
+    </div>
   );
 };
 
