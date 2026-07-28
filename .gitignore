@@ -5,3 +5,5 @@ dist
 
 # Personal photos — not for version control
 src/assets/gallery/
+inspo/
+src/assets/hero.png
