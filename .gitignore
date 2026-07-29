@@ -3,7 +3,5 @@ dist
 .DS_Store
 *.local
 
-# Personal photos — not for version control
-src/assets/gallery/
 inspo/
 src/assets/hero.png
