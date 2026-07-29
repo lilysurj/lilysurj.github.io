@@ -14,7 +14,6 @@ export function CursorPhotoTrailDemo({ onBack }: { onBack: () => void }) {
       order="sequential"
       maxImages={7}
       spawnDistancePx={75}
-      spawnIntervalMs={80}
       imageSizeRange={[130, 200]}
       lifespanMs={700}
       style={{
