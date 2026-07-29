@@ -54,7 +54,7 @@ export function CursorPhotoTrailDemo({ onBack }: { onBack: () => void }) {
           left: '1.5rem',
           background: 'none',
           border: 'none',
-          color: 'white',
+          color: '#FFFCEE',
           fontSize: '1rem',
           fontWeight: 500,
           letterSpacing: '0.03em',

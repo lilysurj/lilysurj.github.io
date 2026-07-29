@@ -399,3 +399,106 @@ Added a `position: fixed` background strip at the top of `HomePage.tsx` that sit
 | Arrow button | 60 |
 
 The strip is the same Klein Blue as the page background, so it's invisible against the background but blocks photos from bleeding through the menu area. `pointerEvents: none` ensures clicks pass through to nav buttons.
+
+---
+
+## Session: 2026-07-28 (return button text)
+
+### What changed
+Changed the return button label on subpages from `re★urn` → `return★` in both `src/components/GalleryPage.tsx` (line 89) and `src/components/PageView.tsx` (line 63). The `StarIcon` now appears after the word "return" instead of inside it.
+
+---
+
+## Session: 2026-07-28 (photo trail spacing + star icon + nav close animation)
+
+### Photo trail spacing
+`spawnDistancePx` in `HomePage.tsx` increased from `100` → `150` to reduce photo overlap.
+
+### Star icon replacing plane arrow
+Replaced `PlaneArrow` SVG (outlined triangle polygon) with `StarIcon` — a white-filled 4-pointed sparkle star.
+
+**SVG:** `viewBox="0 0 24 24"`, `fill="white"`. Path: `M12 0 L13.77 10.23 L24 12 L13.77 13.77 L12 24 L10.23 13.77 L0 12 L10.23 10.23 Z` (outer r=12, inner r≈2.5 at 45° — very sharp/elongated points).
+
+**Used in two places:**
+1. The nav trigger button: `width: 32, height: 32`
+2. Inline in the `<h1>` name: `"lily surj" + <StarIcon style={{ width: '0.75em', height: '0.75em' }} /> + "dinata"` — replaces the first "a" in surjadinata. Wrapped in `<span style={{ display: 'inline-flex', alignItems: 'center' }}>`.
+
+### flyLeft animation update (rotation before flight)
+`@keyframes flyLeft` in `index.css` updated to spin the star −90° in place before flying:
+```css
+0%   { transform: translateX(calc(100vw - 5rem)) rotate(0deg);   timing: ease-in-out }
+25%  { transform: translateX(calc(100vw - 5rem)) rotate(-90deg); timing: linear }
+100% { transform: translateX(0) rotate(-90deg); }
+```
+- 0–25% (0–300ms): rotates in place at right side
+- 25–100% (300–1200ms): flies left, stays rotated
+
+Static `navOpen` transform updated to `'translateX(0) rotate(-90deg)'` so rotation persists after animation ends.
+
+### REVEAL_AT timings recalculated
+Old timings assumed pure linear flight from 0ms. Now flight starts at 300ms (after rotation phase).
+Formula: `t = 300 + (95 - vw) / 95 * 900`
+
+| Item | vw | reveal delay |
+|------|----|-------------|
+| projects | ~75vw | 490ms |
+| gallery | ~59vw | 640ms |
+| blog | ~44vw | 780ms |
+| about | ~28vw | 935ms |
+
+### Close (flyRight) animation — reverse nav
+Added `closeNav()` function and `isClosing` state. Clicking the star when open plays the reverse:
+
+**`@keyframes flyRight`** (`index.css`):
+```css
+0%   { transform: translateX(0) rotate(-90deg); timing: ease-in-out }
+25%  { transform: translateX(0) rotate(0deg);   timing: linear }
+100% { transform: translateX(calc(100vw - 5rem)) rotate(0deg); }
+```
+
+**`HIDE_AT`** — when each item's opacity fade starts on close. Values are timed so the fade (350ms duration) completes exactly as the star arrives: `t_hide = t_arrive - 350ms` where `t_arrive = 300 + vw / 95 * 900`.
+
+| Item | vw | hide delay |
+|------|----|-----------|
+| about | ~28vw | 215ms |
+| blog | ~44vw | 365ms |
+| gallery | ~59vw | 510ms |
+| projects | ~75vw | 660ms |
+
+Button `onClick` now toggles: `navOpen ? closeNav : openNav`. Cursor is `pointer` unless `isAnimating`.
+
+### Menu bar opacity tied to revealed set
+The nav background strip now has `opacity: revealed.size > 0 ? 1 : 0` with `transition: 'opacity 0.35s ease'`. It fades in when the first word appears (open) and fades out when the last word is removed from `revealed` (close).
+
+---
+
+## Session: 2026-07-28 (title star double-click spin)
+
+### What changed
+The star in "lily surj★dinata" (`<h1>` in `HomePage.tsx`) now spins 360° when double-clicked.
+
+**Implementation:**
+- Added `starSpinning: boolean` state to `HomePage`.
+- `StarIcon` now accepts an optional `onAnimationEnd` prop (forwarded to the `<svg>`).
+- The star is wrapped in a `<span role="img" aria-label="star">` with `pointerEvents: 'auto'` (overrides the parent `h1`'s `pointerEvents: 'none'`) and an `onDoubleClick` handler.
+- On double-click: sets `starSpinning = true`. On `animationEnd`: resets to `false`.
+- Applied animation: `starNameSpin 0.6s ease-in-out` (added to `src/index.css`).
+
+**Keyframe (`index.css`):**
+```css
+@keyframes starNameSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+```
+
+---
+
+## Session: 2026-07-28 (about page links)
+
+### What changed
+Two phrases in `src/components/AboutPage.tsx` are now hyperlinks:
+- **"harvey mudd"** → `https://www.hmc.edu/` (opens in new tab)
+- **"listening to house music"** → `https://music.youtube.com/@lilys2891?si=xOIeaIJDe79_4GIW` (opens in new tab)
+
+Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to keep the subtle underline style consistent with the ivory palette.

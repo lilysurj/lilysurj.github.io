@@ -1,26 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { ALL_PHOTOS as PHOTOS, getTag, getCaption } from '../galleryMeta';
 
-const imageModules = import.meta.glob<{ default: string }>(
-  '../assets/gallery/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP,gif,GIF,avif,AVIF}',
-  { eager: true }
+const StarIcon = ({ style }: { style?: CSSProperties }) => (
+  <svg viewBox="0 0 24 24" fill="#FFFCEE" aria-hidden="true" style={style}>
+    <path d="M12 0 L13.77 10.23 L24 12 L13.77 13.77 L12 24 L10.23 13.77 L0 12 L10.23 10.23 Z" />
+  </svg>
 );
-
-const PHOTOS = Object.entries(imageModules).map(([path, m]) => ({
-  src: m.default,
-  filename: path.split('/').pop()!,
-}));
-
-const DEFAULT_TAG = 'shot on film';
-
-// Fill in caption and/or tag for each photo. tag defaults to DEFAULT_TAG if omitted.
-const DESCRIPTIONS: Record<string, { caption?: string; tag?: string }> = {
-  'big_shan.jpeg':       { caption: 'big shan' },
-  'foothill_blvd.jpeg':  { caption: 'foothill blvd' },
-  'friends.JPG':         { caption: 'big bear!' },
-  'green_beach.jpeg':    { caption: 'green' },
-  'max.jpeg':            { caption: 'mmc' },
-  'megan_and_peen.jpeg': { caption: 'scripps larp' },
-};
 
 export function GalleryPage({ onBack }: { onBack: () => void }) {
   const [visible, setVisible] = useState(false);
@@ -64,7 +49,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
         position: 'fixed',
         inset: 0,
         background: '#002FA7',
-        color: 'white',
+        color: '#FFFCEE',
         overflow: 'auto',
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.3s ease',
@@ -90,7 +75,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
           style={{
             background: 'none',
             border: 'none',
-            color: 'white',
+            color: '#FFFCEE',
             fontSize: '1rem',
             fontWeight: 500,
             letterSpacing: '0.03em',
@@ -101,7 +86,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
           }}
           aria-label="Return to home"
         >
-          return
+          return<StarIcon style={{ width: '0.75em', height: '0.75em', display: 'inline-block', verticalAlign: 'middle', margin: '0 0.05em' }} />
         </button>
         <span style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.03em', opacity: 0.55 }}>
           lily surjadinata
@@ -122,9 +107,8 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
           }}
         >
           {PHOTOS.map(({ src, filename }, i) => {
-            const entry = DESCRIPTIONS[filename];
-            const caption = entry?.caption ?? '';
-            const tag = entry?.tag ?? DEFAULT_TAG;
+            const caption = getCaption(filename);
+            const tag = getTag(filename);
             const isHovered = hoveredIdx === i;
             return (
               <div
@@ -165,7 +149,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
                   {caption && (
                     <span
                       style={{
-                        color: 'rgba(255,255,255,0.9)',
+                        color: 'rgba(255,252,238,0.9)',
                         fontSize: '1rem',
                         fontWeight: 400,
                         letterSpacing: '0.02em',
@@ -178,7 +162,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
                   )}
                   <span
                     style={{
-                      color: 'rgba(255,255,255,0.5)',
+                      color: 'rgba(255,252,238,0.5)',
                       fontSize: '0.875rem',
                       fontWeight: 400,
                       letterSpacing: '0.04em',
@@ -239,7 +223,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
                   transform: 'translateY(-50%)',
                   background: 'none',
                   border: 'none',
-                  color: 'white',
+                  color: '#FFFCEE',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
                   opacity: 0.6,
@@ -266,7 +250,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
                   transform: 'translateY(-50%)',
                   background: 'none',
                   border: 'none',
-                  color: 'white',
+                  color: '#FFFCEE',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
                   opacity: 0.6,
@@ -291,7 +275,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
               right: '1.5rem',
               background: 'none',
               border: 'none',
-              color: 'white',
+              color: '#FFFCEE',
               fontSize: '1.25rem',
               cursor: 'pointer',
               opacity: 0.6,

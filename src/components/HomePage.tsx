@@ -1,40 +1,46 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { CursorPhotoTrail } from './CursorPhotoTrail';
-
-const imageModules = import.meta.glob<{ default: string }>(
-  '../assets/gallery/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP,gif,GIF}',
-  { eager: true },
-);
-const GALLERY_IMAGES = Object.values(imageModules).map(m => m.default);
+import { FILM_PHOTOS } from '../galleryMeta';
 
 const NAV_ITEMS = ['about', 'blog', 'gallery', 'projects'] as const;
 type NavItem = (typeof NAV_ITEMS)[number];
 
-// Milliseconds after click when the plane's centre crosses each item (right→left)
-// Items are positioned at ~28%, ~44%, ~59%, ~75% of viewport width
+// Milliseconds after click when the star crosses each item (right→left open, left→right close)
+// Items at ~28%, ~44%, ~59%, ~75% vw. Rotation phase = 0–300ms, flight = 300–1200ms.
+// open:  t = 300 + (95 - vw) / 95 * 900
+// close: t = 300 + vw / 95 * 900
 const REVEAL_AT: Record<NavItem, number> = {
-  projects: 280,
-  gallery: 480,
-  blog: 660,
-  about: 860,
+  projects: 490,
+  gallery: 640,
+  blog: 780,
+  about: 935,
 };
 
-const PlaneArrow = () => (
-  <svg width="34" height="32" viewBox="0 0 34 32" fill="none" aria-hidden="true">
-    <polygon
-      points="28,2 6,16 28,30"
-      stroke="white"
-      strokeWidth="2.5"
-      strokeLinejoin="round"
-      fill="none"
-    />
+const HIDE_AT: Record<NavItem, number> = {
+  about:    215,
+  blog:     365,
+  gallery:  510,
+  projects: 660,
+};
+
+const StarIcon = ({ style, onAnimationEnd }: { style?: CSSProperties; onAnimationEnd?: () => void }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="#FFFCEE"
+    aria-hidden="true"
+    style={style}
+    onAnimationEnd={onAnimationEnd}
+  >
+    <path d="M12 0 L13.77 10.23 L24 12 L13.77 13.77 L12 24 L10.23 13.77 L0 12 L10.23 10.23 Z" />
   </svg>
 );
 
 export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page: NavItem) => void; startOpen?: boolean }) {
   const [navOpen, setNavOpen] = useState(startOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [revealed, setRevealed] = useState<Set<NavItem>>(startOpen ? new Set(NAV_ITEMS) : new Set());
+  const [starSpinning, setStarSpinning] = useState(false);
 
   const openNav = () => {
     if (navOpen || isAnimating) return;
@@ -42,11 +48,7 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
 
     NAV_ITEMS.forEach(item => {
       setTimeout(() => {
-        setRevealed(prev => {
-          const next = new Set(prev);
-          next.add(item);
-          return next;
-        });
+        setRevealed(prev => { const next = new Set(prev); next.add(item); return next; });
       }, REVEAL_AT[item]);
     });
 
@@ -56,20 +58,42 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
     }, 1200);
   };
 
+  const closeNav = () => {
+    if (!navOpen || isAnimating) return;
+    setIsAnimating(true);
+    setIsClosing(true);
+
+    NAV_ITEMS.forEach(item => {
+      setTimeout(() => {
+        setRevealed(prev => { const next = new Set(prev); next.delete(item); return next; });
+      }, HIDE_AT[item]);
+    });
+
+    setTimeout(() => {
+      setNavOpen(false);
+      setIsAnimating(false);
+      setIsClosing(false);
+    }, 1200);
+  };
+
   const arrowTransform = isAnimating
     ? undefined
     : navOpen
-    ? 'translateX(0)'
-    : 'translateX(calc(100vw - 5rem))';
+    ? 'translateX(0) rotate(-90deg)'
+    : 'translateX(calc(100vw - 5rem)) rotate(0deg)';
 
-  const arrowAnimation = isAnimating ? 'flyLeft 1.2s linear both' : undefined;
+  const arrowAnimation = isAnimating
+    ? (isClosing ? 'flyRight 1.2s linear both' : 'flyLeft 1.2s linear both')
+    : !navOpen
+    ? 'starPulse 2s ease-in-out infinite'
+    : undefined;
 
   return (
     <CursorPhotoTrail
-      images={GALLERY_IMAGES}
+      images={FILM_PHOTOS}
       order="sequential"
       maxImages={7}
-      spawnDistancePx={100}
+      spawnDistancePx={150}
       imageSizeRange={[240, 240]}
       lifespanMs={700}
       trailZIndex={1}
@@ -91,13 +115,15 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
           background: '#002FA7',
           zIndex: 50,
           pointerEvents: 'none',
+          opacity: revealed.size > 0 ? 1 : 0,
+          transition: 'opacity 0.35s ease',
         }}
       />
 
       {/* Arrow / plane — flies from top-right to top-left on click */}
       <button
-        onClick={openNav}
-        aria-label="Open navigation"
+        onClick={navOpen ? closeNav : openNav}
+        aria-label={navOpen ? 'Close navigation' : 'Open navigation'}
         style={{
           position: 'fixed',
           top: '1.5rem',
@@ -107,12 +133,12 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
           background: 'none',
           border: 'none',
           padding: 0,
-          cursor: navOpen ? 'default' : 'pointer',
+          cursor: isAnimating ? 'default' : 'pointer',
           zIndex: 60,
           lineHeight: 0,
         }}
       >
-        <PlaneArrow />
+        <StarIcon style={{ width: 32, height: 32 }} />
       </button>
 
       {/* Nav items span ~28–75 vw, revealed right-to-left as plane passes */}
@@ -140,7 +166,7 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
               transition: 'opacity 0.35s ease',
               background: 'none',
               border: 'none',
-              color: 'white',
+              color: '#FFFCEE',
               fontSize: '1rem',
               fontWeight: 500,
               letterSpacing: '0.03em',
@@ -161,7 +187,7 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'white',
+          color: '#FFFCEE',
           fontSize: 'clamp(2.5rem, 6.5vw, 6rem)',
           fontWeight: 900,
           lineHeight: 1,
@@ -172,7 +198,27 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
           zIndex: 2,
         }}
       >
-        lily surjadinata
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+          lily surj<span
+            role="img"
+            aria-label="star"
+            onDoubleClick={() => {
+              if (starSpinning) return;
+              setStarSpinning(true);
+            }}
+            style={{ display: 'inline-flex', pointerEvents: 'auto', cursor: 'default', lineHeight: 0 }}
+          >
+            <StarIcon
+              style={{
+                width: '0.75em',
+                height: '0.75em',
+                flexShrink: 0,
+                animation: starSpinning ? 'starNameSpin 0.6s ease-in-out' : undefined,
+              }}
+              onAnimationEnd={() => setStarSpinning(false)}
+            />
+          </span>dinata
+        </span>
       </h1>
     </CursorPhotoTrail>
   );

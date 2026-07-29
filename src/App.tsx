@@ -4,6 +4,7 @@ import { IntroOverlay } from './components/IntroOverlay'
 import { HomePage } from './components/HomePage'
 import { PageView } from './components/PageView'
 import { GalleryPage } from './components/GalleryPage'
+import { AboutPage } from './components/AboutPage'
 
 type Page = 'about' | 'blog' | 'gallery' | 'projects';
 
@@ -20,6 +21,8 @@ export default function App() {
     <>
       {currentPage === 'gallery' ? (
         <GalleryPage onBack={handleBack} />
+      ) : currentPage === 'about' ? (
+        <AboutPage onBack={handleBack} onNavigate={setCurrentPage} />
       ) : currentPage ? (
         <PageView page={currentPage} onBack={handleBack} />
       ) : (

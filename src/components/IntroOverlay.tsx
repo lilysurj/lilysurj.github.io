@@ -1,6 +1,12 @@
-import { type FC, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, type FC, useEffect, useRef, useState } from 'react';
 import leftHand from '../assets/left-hand-trans.png';
 import rightHand from '../assets/right-hand-trans.png';
+
+const StarIcon = ({ style }: { style?: CSSProperties }) => (
+  <svg viewBox="0 0 24 24" fill="#FFFCEE" aria-hidden="true" style={style}>
+    <path d="M12 0 L13.77 10.23 L24 12 L13.77 13.77 L12 24 L10.23 13.77 L0 12 L10.23 10.23 Z" />
+  </svg>
+);
 
 // ---------------------------------------------------------------------------
 // Layout constants
@@ -19,6 +25,7 @@ export const IntroOverlay: FC = () => {
   const [isTouching, setIsTouching] = useState(false);
   const [isFading, setIsFading] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+  const [showContactStar, setShowContactStar] = useState(false);
   const hasContacted = useRef(false);
 
   // Phase 1: fade hands in, then slide them together
@@ -38,11 +45,12 @@ export const IntroOverlay: FC = () => {
     return () => clearTimeout(t);
   }, [isFading]);
 
-  // Phase 2: start fade when left hand finishes sliding
+  // Phase 2: show contact star, then fade after it blooms
   const handleLeftTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
     if (e.propertyName !== 'left' || hasContacted.current) return;
     hasContacted.current = true;
-    setIsFading(true);
+    setShowContactStar(true);
+    setTimeout(() => setIsFading(true), 1500);
   };
 
   const dismiss = () => {
@@ -117,6 +125,24 @@ export const IntroOverlay: FC = () => {
           }}
         />
       </div>
+
+      {/* Contact star — blooms at fingertip meeting point */}
+      {showContactStar && (
+        <div
+          style={{
+            position: 'absolute',
+            left: '47.6vw',
+            top: '59vh',
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            zIndex: 10,
+          }}
+        >
+          <div style={{ width: '20vw', height: '20vw', animation: 'contactStarGrow 1.5s cubic-bezier(0.8, 0, 1, 1) forwards' }}>
+            <StarIcon style={{ width: '100%', height: '100%' }} />
+          </div>
+        </div>
+      )}
 
       {/* Skip button */}
       <button

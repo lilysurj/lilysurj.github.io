@@ -12,6 +12,30 @@ body {
 }
 
 @keyframes flyLeft {
-  from { transform: translateX(calc(100vw - 5rem)); }
-  to   { transform: translateX(0); }
+  0%   { transform: translateX(calc(100vw - 5rem)) rotate(0deg);   animation-timing-function: ease-in-out; }
+  25%  { transform: translateX(calc(100vw - 5rem)) rotate(-90deg); animation-timing-function: linear; }
+  100% { transform: translateX(0) rotate(-90deg); }
+}
+
+@keyframes flyRight {
+  0%   { transform: translateX(0) rotate(-90deg); animation-timing-function: ease-in-out; }
+  25%  { transform: translateX(0) rotate(0deg);   animation-timing-function: linear; }
+  100% { transform: translateX(calc(100vw - 5rem)) rotate(0deg); }
+}
+
+@keyframes contactStarGrow {
+  0%   { transform: scale(0); opacity: 0; }
+  8%   { opacity: 1; }
+  100% { transform: scale(30); opacity: 1; }
+}
+
+@keyframes starPulse {
+  0%, 100% { transform: translateX(calc(100vw - 5rem)) rotate(0deg) scale(1); }
+  20%       { transform: translateX(calc(100vw - 5rem)) rotate(0deg) scale(1.25); }
+  40%       { transform: translateX(calc(100vw - 5rem)) rotate(0deg) scale(1); }
+}
+
+@keyframes starNameSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

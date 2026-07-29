@@ -1,6 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 
 type Page = 'about' | 'blog' | 'gallery' | 'projects';
+
+const StarIcon = ({ style }: { style?: CSSProperties }) => (
+  <svg viewBox="0 0 24 24" fill="#FFFCEE" aria-hidden="true" style={style}>
+    <path d="M12 0 L13.77 10.23 L24 12 L13.77 13.77 L12 24 L10.23 13.77 L0 12 L10.23 10.23 Z" />
+  </svg>
+);
 
 export function PageView({ page, onBack }: { page: Page; onBack: () => void }) {
   const [visible, setVisible] = useState(false);
@@ -16,7 +22,7 @@ export function PageView({ page, onBack }: { page: Page; onBack: () => void }) {
         position: 'fixed',
         inset: 0,
         background: '#002FA7',
-        color: 'white',
+        color: '#FFFCEE',
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.3s ease',
         overflow: 'auto',
@@ -41,7 +47,7 @@ export function PageView({ page, onBack }: { page: Page; onBack: () => void }) {
           style={{
             background: 'none',
             border: 'none',
-            color: 'white',
+            color: '#FFFCEE',
             fontSize: '1rem',
             fontWeight: 500,
             letterSpacing: '0.03em',
@@ -54,7 +60,7 @@ export function PageView({ page, onBack }: { page: Page; onBack: () => void }) {
           onMouseLeave={e => (e.currentTarget.style.opacity = '0.55')}
           aria-label="Return to home"
         >
-          return
+          return<StarIcon style={{ width: '0.75em', height: '0.75em', display: 'inline-block', verticalAlign: 'middle', margin: '0 0.05em' }} />
         </button>
 
         <span
