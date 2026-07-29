@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
+import lilyPhoto from '../assets/lily.png';
 
 const StarIcon = ({ style }: { style?: CSSProperties }) => (
   <svg viewBox="0 0 24 24" fill="#FFFCEE" aria-hidden="true" style={style}>
@@ -77,36 +78,37 @@ export function AboutPage({ onBack, onNavigate }: { onBack: () => void; onNaviga
           paddingBottom: '6rem',
           paddingLeft: '1.5rem',
           paddingRight: '1.5rem',
-          maxWidth: '680px',
+          maxWidth: '960px',
+          display: 'flex',
+          gap: '3rem',
+          alignItems: 'flex-start',
+          flexWrap: 'wrap',
         }}
       >
-        {/* <h1
+        <div style={{ flex: '1 1 320px' }}>
+          <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
+            hey! i&#39;m lily, a junior at <a href="https://www.hmc.edu/" target="_blank" rel="noreferrer" style={linkStyle}>harvey mudd</a> studying cs and math with an econ concentration. i&#39;ve done national security work with <a href="https://www.infragardlosangeles.org/" target="_blank" rel="noreferrer" style={linkStyle}>infragard</a>, fbi outreach, and the doj, plus nlp research and full-stack dev.
+          </p>
+
+          <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
+            outside of the cs lab, i&#39;ve love swimming and am getting into <button onClick={() => onNavigate?.('gallery')} style={{ ...linkStyle, background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' }}>film photography</button>. you can probably find me playing zip or listening to <a href="https://music.youtube.com/@lilys2891?si=xOIeaIJDe79_4GIW" target="_blank" rel="noreferrer" style={linkStyle}> house music</a>.
+          </p>
+
+          <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
+            reach out via lsurjadinata [at] hmc [dot] edu !
+          </p>
+        </div>
+
+        <img
+          src={lilyPhoto}
+          alt="lily surjadinata"
           style={{
-            fontSize: 'clamp(3rem, 8vw, 7rem)',
-            fontWeight: 900,
-            letterSpacing: '-0.03em',
-            lineHeight: 1,
-            margin: '0 0 3rem',
+            flex: '0 0 auto',
+            width: 'clamp(200px, 30vw, 320px)',
+            objectFit: 'cover',
+            display: 'block',
           }}
-        >
-          about
-        </h1> */}
-
-        {/* ---- your content below ---- */}
-
-        <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
-          hey! i&#39;m lily, a junior at <a href="https://www.hmc.edu/" target="_blank" rel="noreferrer" style={linkStyle}>harvey mudd</a> studying cs and math with an econ concentration. i&#39;ve done national security work with <a href="https://www.infragardlosangeles.org/" target="_blank" rel="noreferrer" style={linkStyle}>infragard</a>, fbi outreach, and the doj, plus nlp research and full-stack dev.
-        </p>
-
-        <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
-          outside of the cs lab, i&#39;ve love swimming and am getting into <button onClick={() => onNavigate?.('gallery')} style={{ ...linkStyle, background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' }}>film photography</button>. you can probably find me playing zip or listening to <a href="https://music.youtube.com/@lilys2891?si=xOIeaIJDe79_4GIW" target="_blank" rel="noreferrer" style={linkStyle}> house music</a>.
-        </p>
-
-        <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
-          reach out via lsurjadinata [at] hmc [dot] edu !
-        </p>
-
-        {/* ---- your content above ---- */}
+        />
       </div>
     </div>
   );
