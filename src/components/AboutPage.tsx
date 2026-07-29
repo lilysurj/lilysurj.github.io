@@ -78,14 +78,25 @@ export function AboutPage({ onBack, onNavigate }: { onBack: () => void; onNaviga
           paddingBottom: '6rem',
           paddingLeft: '1.5rem',
           paddingRight: '1.5rem',
-          maxWidth: '960px',
+          maxWidth: '1200px',
           display: 'flex',
+          flexDirection: 'row-reverse',
           gap: '3rem',
           alignItems: 'flex-start',
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ flex: '1 1 320px' }}>
+        <img
+          src={lilyPhoto}
+          alt="lily surjadinata"
+          style={{
+            flex: '0 0 auto',
+            width: 'clamp(280px, 45vw, 640px)',
+            display: 'block',
+          }}
+        />
+
+        <div style={{ flex: '1 1 280px' }}>
           <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
             hey! i&#39;m lily, a junior at <a href="https://www.hmc.edu/" target="_blank" rel="noreferrer" style={linkStyle}>harvey mudd</a> studying cs and math with an econ concentration. i&#39;ve done national security work with <a href="https://www.infragardlosangeles.org/" target="_blank" rel="noreferrer" style={linkStyle}>infragard</a>, fbi outreach, and the doj, plus nlp research and full-stack dev.
           </p>
@@ -98,17 +109,6 @@ export function AboutPage({ onBack, onNavigate }: { onBack: () => void; onNaviga
             reach out via lsurjadinata [at] hmc [dot] edu !
           </p>
         </div>
-
-        <img
-          src={lilyPhoto}
-          alt="lily surjadinata"
-          style={{
-            flex: '0 0 auto',
-            width: 'clamp(200px, 30vw, 320px)',
-            objectFit: 'cover',
-            display: 'block',
-          }}
-        />
       </div>
     </div>
   );
