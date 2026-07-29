@@ -84,6 +84,7 @@ export function AboutPage({ onBack, onNavigate }: { onBack: () => void; onNaviga
           gap: '3rem',
           alignItems: 'flex-start',
           flexWrap: 'wrap',
+          justifyContent: 'center',
         }}
       >
         <img
