@@ -15,7 +15,7 @@ interface CursorPhotoTrailProps {
   order?: 'sequential' | 'random';
   maxImages?: number;
   spawnDistancePx?: number;
-  spawnIntervalMs?: number;
+
   imageSizeRange?: [number, number];
   lifespanMs?: number;
   trailZIndex?: number;
@@ -29,7 +29,6 @@ export function CursorPhotoTrail({
   order = 'sequential',
   maxImages = 6,
   spawnDistancePx = 80,
-  spawnIntervalMs = 80,
   imageSizeRange = [120, 180],
   lifespanMs = 600,
   trailZIndex = 50,
@@ -43,7 +42,6 @@ export function CursorPhotoTrail({
   // The gap between lastPos and the current cursor is the carry-over remainder,
   // so spacing stays exactly spawnDistancePx even when the cursor moves fast.
   const lastSpawnPosRef = useRef<{ x: number; y: number } | null>(null);
-  const lastSpawnTimeRef = useRef<number>(0);
   const orderIndexRef = useRef<number>(0);
   const idCounterRef = useRef<number>(0);
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
@@ -66,7 +64,7 @@ export function CursorPhotoTrail({
 
       const [minSize, maxSize] = imageSizeRange;
       const size = minSize + Math.random() * (maxSize - minSize);
-      const rotation = (Math.random() - 0.5) * 20;
+      const rotation = (Math.random() - 0.5) * 8;
       const id = ++idCounterRef.current;
 
       setTrail(prev => {
@@ -98,24 +96,26 @@ export function CursorPhotoTrail({
         return;
       }
 
-      const { x: lx, y: ly } = lastSpawnPosRef.current;
-      const dx = cx - lx;
-      const dy = cy - ly;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < spawnDistancePx) return;
-
-      const now = performance.now();
-      if (now - lastSpawnTimeRef.current < spawnIntervalMs) return;
-
-      spawnImage(cx, cy);
-      lastSpawnPosRef.current = { x: cx, y: cy };
-      lastSpawnTimeRef.current = now;
+      // Walk along the path in spawnDistancePx steps, carrying over the remainder.
+      // This keeps spacing exact even when the cursor jumps far between events.
+      let { x: lx, y: ly } = lastSpawnPosRef.current;
+      while (true) {
+        const dx = cx - lx;
+        const dy = cy - ly;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < spawnDistancePx) break;
+        const ux = dx / dist;
+        const uy = dy / dist;
+        lx += ux * spawnDistancePx;
+        ly += uy * spawnDistancePx;
+        spawnImage(lx, ly);
+      }
+      lastSpawnPosRef.current = { x: lx, y: ly };
     };
 
     container.addEventListener('mousemove', handleMouseMove);
     return () => container.removeEventListener('mousemove', handleMouseMove);
-  }, [spawnImage, spawnDistancePx, spawnIntervalMs]);
+  }, [spawnImage, spawnDistancePx]);
 
   return (
     <div
@@ -131,23 +131,21 @@ export function CursorPhotoTrail({
             src={item.src}
             alt=""
             draggable={false}
-            initial={{ opacity: 0, scale: 0.8, rotate: item.rotation }}
+            initial={{ opacity: 0, scale: 0.92, rotate: item.rotation }}
             animate={{ opacity: 1, scale: 1, rotate: item.rotation }}
             exit={{
               opacity: 0,
-              scale: 0.9,
-              y: -28,
               rotate: item.rotation,
-              transition: { duration: 0.3, ease: 'easeOut' },
+              transition: { duration: 0.5, ease: 'easeOut' },
             }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
             style={{
               position: 'absolute',
-              left: item.x - item.size / 2,
-              top: item.y - item.size / 2,
+              left: item.x,
+              top: item.y,
               width: item.size,
-              height: item.size,
-              objectFit: 'cover',
+              height: 'auto',
+              transform: 'translate(-50%, -50%)',
               pointerEvents: 'none',
               userSelect: 'none',
               zIndex: trailZIndex,
