@@ -14,8 +14,8 @@ interface CursorPhotoTrailProps {
   images: string[];
   order?: 'sequential' | 'random';
   maxImages?: number;
-  spawnDistancePx?: number;
-
+  spawnIntervalMs?: number;
+  minMovePx?: number;
   imageSizeRange?: [number, number];
   lifespanMs?: number;
   trailZIndex?: number;
@@ -28,7 +28,8 @@ export function CursorPhotoTrail({
   images,
   order = 'sequential',
   maxImages = 6,
-  spawnDistancePx = 80,
+  spawnIntervalMs = 80,
+  minMovePx = 10,
   imageSizeRange = [120, 180],
   lifespanMs = 600,
   trailZIndex = 50,
@@ -38,10 +39,8 @@ export function CursorPhotoTrail({
 }: CursorPhotoTrailProps) {
   const [trail, setTrail] = useState<TrailItem[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-  // Tracks the position of the last spawned image, not the raw cursor position.
-  // The gap between lastPos and the current cursor is the carry-over remainder,
-  // so spacing stays exactly spawnDistancePx even when the cursor moves fast.
   const lastSpawnPosRef = useRef<{ x: number; y: number } | null>(null);
+  const lastSpawnTimeRef = useRef<number>(0);
   const orderIndexRef = useRef<number>(0);
   const idCounterRef = useRef<number>(0);
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
@@ -87,35 +86,32 @@ export function CursorPhotoTrail({
     if (!container) return;
 
     const handleMouseMove = (e: MouseEvent) => {
+      const now = performance.now();
       const rect = container.getBoundingClientRect();
       const cx = e.clientX - rect.left;
       const cy = e.clientY - rect.top;
 
-      if (!lastSpawnPosRef.current) {
-        lastSpawnPosRef.current = { x: cx, y: cy };
-        return;
+      // Time gate: at most one spawn per spawnIntervalMs.
+      // Gap between photos scales naturally with cursor speed —
+      // fast cursor travels farther between spawns → larger gaps.
+      if (now - lastSpawnTimeRef.current < spawnIntervalMs) return;
+
+      // Distance gate: don't spawn if cursor hasn't moved (e.g. page scroll).
+      const last = lastSpawnPosRef.current;
+      if (last) {
+        const dx = cx - last.x;
+        const dy = cy - last.y;
+        if (Math.sqrt(dx * dx + dy * dy) < minMovePx) return;
       }
 
-      // Walk along the path in spawnDistancePx steps, carrying over the remainder.
-      // This keeps spacing exact even when the cursor jumps far between events.
-      let { x: lx, y: ly } = lastSpawnPosRef.current;
-      while (true) {
-        const dx = cx - lx;
-        const dy = cy - ly;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < spawnDistancePx) break;
-        const ux = dx / dist;
-        const uy = dy / dist;
-        lx += ux * spawnDistancePx;
-        ly += uy * spawnDistancePx;
-        spawnImage(lx, ly);
-      }
-      lastSpawnPosRef.current = { x: lx, y: ly };
+      spawnImage(cx, cy);
+      lastSpawnPosRef.current = { x: cx, y: cy };
+      lastSpawnTimeRef.current = now;
     };
 
     container.addEventListener('mousemove', handleMouseMove);
     return () => container.removeEventListener('mousemove', handleMouseMove);
-  }, [spawnImage, spawnDistancePx]);
+  }, [spawnImage, spawnIntervalMs, minMovePx]);
 
   return (
     <div
