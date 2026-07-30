@@ -15,6 +15,7 @@ interface CursorPhotoTrailProps {
   order?: 'sequential' | 'random';
   maxImages?: number;
   spawnDistancePx?: number;
+  spawnIntervalMs?: number;
   imageSizeRange?: [number, number];
   lifespanMs?: number;
   trailZIndex?: number;
@@ -28,6 +29,7 @@ export function CursorPhotoTrail({
   order = 'sequential',
   maxImages = 6,
   spawnDistancePx = 80,
+  spawnIntervalMs = 80,
   imageSizeRange = [120, 180],
   lifespanMs = 600,
   trailZIndex = 50,
@@ -41,6 +43,7 @@ export function CursorPhotoTrail({
   // The gap between lastPos and the current cursor is the carry-over remainder,
   // so spacing stays exactly spawnDistancePx even when the cursor moves fast.
   const lastSpawnPosRef = useRef<{ x: number; y: number } | null>(null);
+  const lastSpawnTimeRef = useRef<number>(0);
   const orderIndexRef = useRef<number>(0);
   const idCounterRef = useRef<number>(0);
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
@@ -102,22 +105,17 @@ export function CursorPhotoTrail({
 
       if (dist < spawnDistancePx) return;
 
-      // Spawn one image per spawnDistancePx interval along the segment.
-      // Fast cursor movement spawns multiple images in a single event;
-      // the sub-interval remainder carries over so spacing never drifts.
-      const steps = Math.floor(dist / spawnDistancePx);
-      for (let i = 1; i <= steps; i++) {
-        const t = (i * spawnDistancePx) / dist;
-        spawnImage(lx + dx * t, ly + dy * t);
-      }
+      const now = performance.now();
+      if (now - lastSpawnTimeRef.current < spawnIntervalMs) return;
 
-      const tLast = (steps * spawnDistancePx) / dist;
-      lastSpawnPosRef.current = { x: lx + dx * tLast, y: ly + dy * tLast };
+      spawnImage(cx, cy);
+      lastSpawnPosRef.current = { x: cx, y: cy };
+      lastSpawnTimeRef.current = now;
     };
 
     container.addEventListener('mousemove', handleMouseMove);
     return () => container.removeEventListener('mousemove', handleMouseMove);
-  }, [spawnImage, spawnDistancePx]);
+  }, [spawnImage, spawnDistancePx, spawnIntervalMs]);
 
   return (
     <div
