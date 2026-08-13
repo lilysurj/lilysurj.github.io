@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface TrailItem {
   id: number;
@@ -74,7 +74,7 @@ export function CursorPhotoTrail({
       const timer = setTimeout(() => {
         setTrail(prev => prev.filter(item => item.id !== id));
         timersRef.current.delete(id);
-      }, lifespanMs);
+      }, lifespanMs + 50);
 
       timersRef.current.set(id, timer);
     },
@@ -120,36 +120,38 @@ export function CursorPhotoTrail({
       style={{ position: 'relative', ...style }}
     >
       {children}
-      <AnimatePresence>
-        {trail.map(item => (
-          <motion.img
-            key={item.id}
-            src={item.src}
-            alt=""
-            draggable={false}
-            initial={{ opacity: 0, scale: 0.92, rotate: item.rotation }}
-            animate={{ opacity: 1, scale: 1, rotate: item.rotation }}
-            exit={{
-              opacity: 0,
-              rotate: item.rotation,
-              transition: { duration: 0.5, ease: 'easeOut' },
-            }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
-            style={{
-              position: 'absolute',
-              left: item.x,
-              top: item.y,
-              width: item.size,
-              height: item.size,
-              objectFit: 'cover',
-              transform: 'translate(-50%, -50%)',
-              pointerEvents: 'none',
-              userSelect: 'none',
-              zIndex: trailZIndex,
-            }}
-          />
-        ))}
-      </AnimatePresence>
+      {trail.map(item => (
+        <motion.img
+          key={item.id}
+          src={item.src}
+          alt=""
+          draggable={false}
+          initial={{ x: '-50%', y: '-50%', rotate: item.rotation }}
+          animate={{
+            opacity: [0, 1, 1, 0],
+            scale: [0.82, 1, 1, 0.97],
+            x: '-50%',
+            y: '-50%',
+            rotate: item.rotation,
+          }}
+          transition={{
+            duration: lifespanMs / 1000,
+            times: [0, 0.1, 0.78, 1],
+            ease: ['easeOut', 'linear', 'easeIn'],
+          }}
+          style={{
+            position: 'absolute',
+            left: item.x,
+            top: item.y,
+            width: item.size,
+            height: item.size,
+            objectFit: 'cover',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            zIndex: trailZIndex,
+          }}
+        />
+      ))}
     </div>
   );
 }

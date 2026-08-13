@@ -502,3 +502,15 @@ Two phrases in `src/components/AboutPage.tsx` are now hyperlinks:
 - **"listening to house music"** → `https://music.youtube.com/@lilys2891?si=xOIeaIJDe79_4GIW` (opens in new tab)
 
 Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to keep the subtle underline style consistent with the ivory palette.
+
+---
+## 2026-08-13 — Smoother cursor photo trail animation
+
+**File changed:** `src/components/CursorPhotoTrail.tsx`
+
+**What changed:**
+- Removed `AnimatePresence` and the three-state `initial`/`animate`/`exit` pattern
+- Fixed transform conflict: `transform: 'translate(-50%, -50%)'` in inline `style` was fighting framer-motion's own transform system (which manages `scale` and `rotate`). Moved centering to framer-motion's `x: '-50%'` / `y` keyframes.
+- Replaced with a single keyframe `animate` that drives the full photo lifecycle: quick pop-in (easeOut), gentle upward float while alive (linear), soft fade-out (easeIn)
+- Keyframe shape: `opacity [0→1→1→0]`, `scale [0.82→1→1→0.97]`, `y ['-44%'→'-50%'→'-55%'→'-60%']`
+- Timer buffer increased by 50ms so DOM removal never races the animation end
