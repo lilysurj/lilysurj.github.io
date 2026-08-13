@@ -1,17 +1,16 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ALL_PHOTOS as PHOTOS, getTag, getCaption } from '../galleryMeta';
+import { SiteNav } from './SiteNav';
 
-const StarIcon = ({ style }: { style?: CSSProperties }) => (
-  <svg viewBox="0 0 24 24" fill="#FFFCEE" aria-hidden="true" style={style}>
-    <path d="M12 0 L13.77 10.23 L24 12 L13.77 13.77 L12 24 L10.23 13.77 L0 12 L10.23 10.23 Z" />
-  </svg>
-);
+type Page = 'about' | 'blog' | 'gallery' | 'projects';
 
-export function GalleryPage({ onBack }: { onBack: () => void }) {
+export function GalleryPage({ onBack, onNavigate }: { onBack: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number>(0);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
@@ -45,6 +44,8 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
 
   return (
     <div
+      ref={containerRef}
+      onScroll={(e) => setIsScrolled((e.target as HTMLDivElement).scrollTop > 80)}
       style={{
         position: 'fixed',
         inset: 0,
@@ -55,43 +56,7 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
         transition: 'opacity 0.3s ease',
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-          background: '#002FA7',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '1.25rem 1.5rem',
-        }}
-      >
-        <button
-          onClick={onBack}
-          onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-          onMouseLeave={e => (e.currentTarget.style.opacity = '0.55')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#FFFCEE',
-            fontSize: '1rem',
-            fontWeight: 500,
-            letterSpacing: '0.03em',
-            cursor: 'pointer',
-            padding: 0,
-            opacity: 0.55,
-            transition: 'opacity 0.2s',
-          }}
-          aria-label="Return to home"
-        >
-          return<StarIcon style={{ width: '0.75em', height: '0.75em', display: 'inline-block', verticalAlign: 'middle', margin: '0 0.05em' }} />
-        </button>
-        <span style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0.03em', opacity: 0.55 }}>
-          lily surjadinata
-        </span>
-      </div>
+      <SiteNav startOpen hideNavItems={isScrolled} onNavigate={onNavigate} onClose={onBack} />
 
       {/* Grid */}
       {PHOTOS.length === 0 ? (
@@ -101,9 +66,10 @@ export function GalleryPage({ onBack }: { onBack: () => void }) {
       ) : (
         <div
           style={{
-            columns: '2 280px',
+            columns: '4 140px',
             columnGap: '6px',
             padding: '6px',
+            paddingTop: '5rem',
           }}
         >
           {PHOTOS.map(({ src, filename }, i) => {

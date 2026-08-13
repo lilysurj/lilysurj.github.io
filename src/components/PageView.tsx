@@ -1,14 +1,9 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
+import { SiteNav } from './SiteNav';
 
 type Page = 'about' | 'blog' | 'gallery' | 'projects';
 
-const StarIcon = ({ style }: { style?: CSSProperties }) => (
-  <svg viewBox="0 0 24 24" fill="#FFFCEE" aria-hidden="true" style={style}>
-    <path d="M12 0 L13.77 10.23 L24 12 L13.77 13.77 L12 24 L10.23 13.77 L0 12 L10.23 10.23 Z" />
-  </svg>
-);
-
-export function PageView({ page, onBack }: { page: Page; onBack: () => void }) {
+export function PageView({ page, onBack, onNavigate }: { page: Page; onBack: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -28,52 +23,7 @@ export function PageView({ page, onBack }: { page: Page; onBack: () => void }) {
         overflow: 'auto',
       }}
     >
-      {/* Top bar */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '1.5rem',
-          zIndex: 10,
-        }}
-      >
-        <button
-          onClick={onBack}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#FFFCEE',
-            fontSize: '1rem',
-            fontWeight: 500,
-            letterSpacing: '0.03em',
-            cursor: 'pointer',
-            padding: 0,
-            opacity: 0.55,
-            transition: 'opacity 0.2s',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-          onMouseLeave={e => (e.currentTarget.style.opacity = '0.55')}
-          aria-label="Return to home"
-        >
-          return<StarIcon style={{ width: '0.75em', height: '0.75em', display: 'inline-block', verticalAlign: 'middle', margin: '0 0.05em' }} />
-        </button>
-
-        <span
-          style={{
-            fontSize: '1rem',
-            fontWeight: 500,
-            letterSpacing: '0.03em',
-            opacity: 0.55,
-          }}
-        >
-          lily surjadinata
-        </span>
-      </div>
+      <SiteNav startOpen onNavigate={onNavigate} onClose={onBack} />
 
       {/* Page content */}
       <div

@@ -35,7 +35,7 @@ const CAPTIONS: Record<string, string> = {
   'louvre.jpeg':         'louvre',
   'max.jpeg':            'mmc',
   'megan_and_peen.jpeg': 'scripps larp',
-  'metro.jpeg':          'play sunflower',
+  'metro.jpeg':          'play sunflower by post malone',
   'new_york.jpeg':       'brooklyn bridge',
   'seine.jpeg':          'swimming in the seine',
   'tiernan.jpg':         'washed'

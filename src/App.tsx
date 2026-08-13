@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './index.css'
-import { IntroOverlay } from './components/IntroOverlay'
+// import { IntroOverlay } from './components/IntroOverlay'
 import { HomePage } from './components/HomePage'
 import { PageView } from './components/PageView'
 import { GalleryPage } from './components/GalleryPage'
@@ -20,15 +20,15 @@ export default function App() {
   return (
     <>
       {currentPage === 'gallery' ? (
-        <GalleryPage onBack={handleBack} />
+        <GalleryPage onBack={handleBack} onNavigate={setCurrentPage} />
       ) : currentPage === 'about' ? (
         <AboutPage onBack={handleBack} onNavigate={setCurrentPage} />
       ) : currentPage ? (
-        <PageView page={currentPage} onBack={handleBack} />
+        <PageView page={currentPage} onBack={handleBack} onNavigate={setCurrentPage} />
       ) : (
         <HomePage onNavigate={setCurrentPage} startOpen={returnedFromPage} />
       )}
-      <IntroOverlay />
+      {/* <IntroOverlay /> */}
     </>
   )
 }
