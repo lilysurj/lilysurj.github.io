@@ -1,13 +1,10 @@
-import { useState } from 'react';
 import { CursorPhotoTrail } from './CursorPhotoTrail';
 import { FILM_PHOTOS } from '../galleryMeta';
-import { SiteNav, StarIcon } from './SiteNav';
+import { SiteNav } from './SiteNav';
 
 type NavItem = 'about' | 'blog' | 'gallery' | 'projects';
 
 export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page: NavItem) => void; startOpen?: boolean }) {
-  const [starSpinning, setStarSpinning] = useState(false);
-
   return (
     <CursorPhotoTrail
       images={FILM_PHOTOS}
@@ -46,27 +43,7 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
           zIndex: 2,
         }}
       >
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-          lily surj<span
-            role="img"
-            aria-label="star"
-            onDoubleClick={() => {
-              if (starSpinning) return;
-              setStarSpinning(true);
-            }}
-            style={{ display: 'inline-flex', pointerEvents: 'auto', cursor: 'default', lineHeight: 0 }}
-          >
-            <StarIcon
-              style={{
-                width: '0.75em',
-                height: '0.75em',
-                flexShrink: 0,
-                animation: starSpinning ? 'starNameSpin 0.6s ease-in-out' : undefined,
-              }}
-              onAnimationEnd={() => setStarSpinning(false)}
-            />
-          </span>dinata
-        </span>
+        lily surjadinata
       </h1>
     </CursorPhotoTrail>
   );

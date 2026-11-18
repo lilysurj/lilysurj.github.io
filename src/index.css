@@ -34,8 +34,3 @@ body {
   20%       { transform: translateX(calc(100vw - 5rem)) rotate(0deg) scale(1.25); }
   40%       { transform: translateX(calc(100vw - 5rem)) rotate(0deg) scale(1); }
 }
-
-@keyframes starNameSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
