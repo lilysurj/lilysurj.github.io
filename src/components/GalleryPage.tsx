@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ALL_PHOTOS as PHOTOS, getCaption } from '../galleryMeta';
 import { SiteNav } from './SiteNav';
 
-type Page = 'about' | 'blog' | 'gallery' | 'projects';
+type Page = 'about' | 'words' | 'gallery' | 'projects';
 
 export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () => void; onBackStart?: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);

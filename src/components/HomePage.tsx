@@ -2,7 +2,7 @@ import { CursorPhotoTrail } from './CursorPhotoTrail';
 import { TRAIL_PHOTOS } from '../galleryMeta';
 import { SiteNav } from './SiteNav';
 
-type NavItem = 'about' | 'blog' | 'gallery' | 'projects';
+type NavItem = 'about' | 'words' | 'gallery' | 'projects';
 
 export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page: NavItem) => void; startOpen?: boolean }) {
   return (

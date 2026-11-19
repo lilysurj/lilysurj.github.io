@@ -8,7 +8,7 @@ import { AboutPage } from './components/AboutPage'
 import { PageLoader, LOADER_FADE_MS } from './components/PageLoader'
 import { ALL_PHOTOS } from './galleryMeta'
 
-type Page = 'about' | 'blog' | 'gallery' | 'projects';
+type Page = 'about' | 'words' | 'gallery' | 'projects';
 
 const MIN_LOADER_MS = 700;
 const GALLERY_PRELOAD_COUNT = 12;

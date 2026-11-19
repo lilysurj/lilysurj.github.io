@@ -4,7 +4,7 @@ import { SiteNav } from './SiteNav';
 
 const linkStyle: CSSProperties = { color: 'inherit', textDecoration: 'underline', textDecorationColor: 'rgba(255,252,238,0.4)' };
 
-type Page = 'about' | 'blog' | 'gallery' | 'projects';
+type Page = 'about' | 'words' | 'gallery' | 'projects';
 
 export function AboutPage({ onBack, onBackStart, onNavigate }: { onBack: () => void; onBackStart?: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);

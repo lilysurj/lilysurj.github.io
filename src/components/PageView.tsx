@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { SiteNav } from './SiteNav';
 
-type Page = 'about' | 'blog' | 'gallery' | 'projects';
+type Page = 'about' | 'words' | 'gallery' | 'projects';
 
 export function PageView({ page, onBack, onBackStart, onNavigate }: { page: Page; onBack: () => void; onBackStart?: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);

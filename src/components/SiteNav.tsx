@@ -1,18 +1,18 @@
 import { useState, type CSSProperties } from 'react';
 
-const NAV_ITEMS = ['about', 'blog', 'gallery', 'projects'] as const;
+const NAV_ITEMS = ['about', 'words', 'gallery', 'projects'] as const;
 type NavItem = (typeof NAV_ITEMS)[number];
 
 const REVEAL_AT: Record<NavItem, number> = {
   projects: 490,
   gallery: 640,
-  blog: 780,
+  words: 780,
   about: 935,
 };
 
 const HIDE_AT: Record<NavItem, number> = {
   about:    215,
-  blog:     365,
+  words:    365,
   gallery:  510,
   projects: 660,
 };
