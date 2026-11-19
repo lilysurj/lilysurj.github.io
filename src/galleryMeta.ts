@@ -18,7 +18,7 @@ const gridModules = import.meta.glob<{ default: { src: string; w: number; h: num
 
 // Pinned spots in the gallery; every other photo fills in around the middle group
 const TOP = ['arlington.jpeg', 'new_york.jpeg', 'boston.JPG', 'vets.jpg', 'friends.JPG'];
-const MIDDLE = ['bpl.jpg', 'green_beach.jpeg', 'metro.jpeg'];
+const MIDDLE = ['bpl.jpg', 'green_beach.jpeg', 'metro.JPG'];
 const BOTTOM = ['foothill_blvd.jpeg'];
 
 function orderFilenames(filenames: string[]): string[] {
@@ -64,7 +64,7 @@ const CAPTIONS: Record<string, string> = {
   'louvre.jpeg':         'louvre',
   'max.jpeg':            'mmc',
   'megan_and_peen.jpeg': 'scripps',
-  'metro.jpeg':          'sunflower by post malone',
+  'metro.JPG':           'sunflower by post malone',
   'new_york.jpeg':       'brooklyn bridge',
   'seine.jpeg':          'seine river',
   'boston.JPG':          'boston public garden',

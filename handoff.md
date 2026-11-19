@@ -583,3 +583,6 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 
 ## 2026-11-18 — About copy rewrite
 - `AboutPage.tsx`: replaced the bio with the user's new text ("i've done research...", "in summer 2027, i'll be interning at palantir.", "outside the lab", "i also love wordle, and i'm usually listening to", email line without the "!"). Kept the harvey mudd, infragard, film photography (gallery) and house music links. Build and lint pass. Committed and pushed to deploy.
+
+## 2026-11-18 — Metro photo update
+- User replaced `metro.jpeg` with a new `metro.JPG` and updated its caption key. Also changed `MIDDLE` in `galleryMeta.ts` to `metro.JPG` so it keeps its pinned middle spot. Build and lint pass. Committed and pushed to deploy.
