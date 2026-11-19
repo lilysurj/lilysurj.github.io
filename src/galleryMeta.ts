@@ -24,7 +24,6 @@ const CAPTIONS: Record<string, string> = {
   'getty.jpeg':          'getty',
   'green_beach.jpeg':    'green',
   'greenhouse.jpeg':     'us botanical garden',
-  'hochsgiving.jpeg':    'hochsgiving',
   'laguna.jpeg':         'laguna',
   'louvre.jpeg':         'louvre',
   'max.jpeg':            'mmc',

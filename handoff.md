@@ -540,3 +540,6 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 
 ## 2026-11-18 — Commit & deploy
 - Committed the gallery photo swap (removed big_shan, hackathon, hochsgiving, tiernan; added boston, bpl, rufus, the_odessey) and the cursor-trail work (no camera grouping, random 7 per load, WebP thumbnails, preloading). Pushed to main to trigger the GitHub Pages deploy. `.claude/` left untracked (local settings).
+- Removed the leftover `hochsgiving.jpeg` caption from `galleryMeta.ts` (that photo was deleted).
+- About page copy edited for readability (AboutPage.tsx): smoother wording in paragraphs 1–2, removed a stray space inside the "house music" link, and fixed "edu !" to "edu!".
+- Committed the caption cleanup and About copy edit, and pushed to main to deploy.
