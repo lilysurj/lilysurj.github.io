@@ -77,7 +77,7 @@ const CAPTIONS: Record<string, string> = {
   'vets.jpg':            'morg + zoe',
   'les_cocottes.JPG':    'les cocottes',
   'shinsen.JPG':         'shinsen',
-  'nye':                 'nye 2025',
+  'nye.jpg':             'nye 2025',
   'hike.jpg':            'hike'
 };
 
