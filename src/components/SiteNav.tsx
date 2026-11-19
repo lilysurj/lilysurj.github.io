@@ -34,12 +34,14 @@ export { StarIcon };
 export function SiteNav({
   onNavigate,
   onClose,
+  onCloseStart,
   startOpen = false,
   showOverlay = false,
   hideNavItems = false,
 }: {
   onNavigate?: (page: NavItem) => void;
   onClose?: () => void;
+  onCloseStart?: () => void;
   startOpen?: boolean;
   showOverlay?: boolean;
   hideNavItems?: boolean;
@@ -71,6 +73,7 @@ export function SiteNav({
     if (!navOpen || isAnimating) return;
     setIsAnimating(true);
     setIsClosing(true);
+    onCloseStart?.();
 
     NAV_ITEMS.forEach(item => {
       setTimeout(() => {

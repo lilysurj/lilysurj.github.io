@@ -34,3 +34,8 @@ body {
   20%       { transform: translateX(calc(100vw - 5rem)) rotate(0deg) scale(1.25); }
   40%       { transform: translateX(calc(100vw - 5rem)) rotate(0deg) scale(1); }
 }
+
+@keyframes loaderShoot {
+  0%   { transform: translateX(-3rem); }
+  100% { transform: translateX(calc(100vw + 1rem)); }
+}

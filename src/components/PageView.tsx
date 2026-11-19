@@ -3,7 +3,7 @@ import { SiteNav } from './SiteNav';
 
 type Page = 'about' | 'blog' | 'gallery' | 'projects';
 
-export function PageView({ page, onBack, onNavigate }: { page: Page; onBack: () => void; onNavigate?: (page: Page) => void }) {
+export function PageView({ page, onBack, onBackStart, onNavigate }: { page: Page; onBack: () => void; onBackStart?: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function PageView({ page, onBack, onNavigate }: { page: Page; onBack: () 
         overflow: 'auto',
       }}
     >
-      <SiteNav startOpen onNavigate={onNavigate} onClose={onBack} />
+      <SiteNav startOpen onNavigate={onNavigate} onCloseStart={onBackStart} onClose={onBack} />
 
       {/* Page content */}
       <div

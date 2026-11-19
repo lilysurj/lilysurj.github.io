@@ -4,7 +4,7 @@ import { SiteNav } from './SiteNav';
 
 type Page = 'about' | 'blog' | 'gallery' | 'projects';
 
-export function GalleryPage({ onBack, onNavigate }: { onBack: () => void; onNavigate?: (page: Page) => void }) {
+export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () => void; onBackStart?: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
@@ -56,7 +56,9 @@ export function GalleryPage({ onBack, onNavigate }: { onBack: () => void; onNavi
         transition: 'opacity 0.3s ease',
       }}
     >
-      <SiteNav startOpen hideNavItems={isScrolled} onNavigate={onNavigate} onClose={onBack} />
+      <div hidden={lightbox !== null} inert={lightbox !== null}>
+        <SiteNav startOpen hideNavItems={isScrolled} onNavigate={onNavigate} onCloseStart={onBackStart} onClose={onBack} />
+      </div>
 
       {/* Grid */}
       {PHOTOS.length === 0 ? (

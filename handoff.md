@@ -514,3 +514,17 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 - Replaced with a single keyframe `animate` that drives the full photo lifecycle: quick pop-in (easeOut), gentle upward float while alive (linear), soft fade-out (easeIn)
 - Keyframe shape: `opacity [0→1→1→0]`, `scale [0.82→1→1→0.97]`, `y ['-44%'→'-50%'→'-55%'→'-60%']`
 - Timer buffer increased by 50ms so DOM removal never races the animation end
+
+## 2026-11-12
+- Launched local dev preview (`npm run dev`) at http://localhost:5173/. No code changes.
+- Removed the star from "lily surjadinata" on the home page (HomePage.tsx: dropped StarIcon, double-click spin state; removed unused `starNameSpin` keyframes from index.css).
+
+## 2026-11-18 — Persistent loading screen between pages
+- New `src/components/PageLoader.tsx`: full-screen Klein Blue overlay with a spinning/pulsing ivory star (`loaderSpin` keyframes in `index.css`). It's mounted once in `App.tsx`, so it never remounts and the animation keeps running smoothly through every transition.
+- `App.tsx`: all navigation (nav items, back/close, the about→gallery link) goes through `transitionTo`. It fades the loader in (300ms), swaps the page while the screen is covered, then waits at least 700ms and for the destination's assets to load (gallery: first 12 photos) before fading out. A token ref makes sure only the most recent navigation wins if someone clicks fast.
+- Follow-up: the loader is now just a blank Klein Blue screen with the menu star (32px, same `top: 1.5rem` track as SiteNav) shooting left→right across the top in a loop (`loaderShoot` keyframes, replaced `loaderSpin`).
+- Fix: going back to home no longer shows the loader — SiteNav's close animation already shoots the star across, so `handleBack` swaps straight to HomePage (and cancels any in-flight transition).
+- Back-to-home: SiteNav now has an `onCloseStart` prop (fired when the star starts flying right), threaded through About/Gallery/PageView as `onBackStart`. App sets `blanking`, which shows PageLoader in `blank` mode — instantly, no star, z-index 58 so the nav star (z 60) flies over a blank Klein Blue screen. On `onClose` the home page swaps in and the blank layer fades out.
+- Fix: the blank back-to-home screen was hiding the nav star (each page root is `position: fixed`, so the star's z-index is trapped in the page's stacking context). Blank mode now draws its own star at the nav star's position running the same `flyRight 1.2s` animation, on a z-index 100 blank Klein Blue layer.
+- Fix: the loader's shooting star looped even while the loader was hidden, so on show it appeared mid-pass (~3/4 across) and then went again. PageLoader now bumps a `run` counter each time it becomes visible and keys the star on it, so every show starts a fresh pass from the left.
+- Shooting star pass shortened to 1s so it matches the loader's ~1s on-screen time (700ms min + 300ms fade-out): one pass per normal transition, keeps looping only if loading runs long.

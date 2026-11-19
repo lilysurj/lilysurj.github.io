@@ -6,7 +6,7 @@ const linkStyle: CSSProperties = { color: 'inherit', textDecoration: 'underline'
 
 type Page = 'about' | 'blog' | 'gallery' | 'projects';
 
-export function AboutPage({ onBack, onNavigate }: { onBack: () => void; onNavigate?: (page: Page) => void }) {
+export function AboutPage({ onBack, onBackStart, onNavigate }: { onBack: () => void; onBackStart?: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function AboutPage({ onBack, onNavigate }: { onBack: () => void; onNaviga
         transition: 'opacity 0.3s ease',
       }}
     >
-      <SiteNav startOpen onNavigate={onNavigate} onClose={onBack} />
+      <SiteNav startOpen onNavigate={onNavigate} onCloseStart={onBackStart} onClose={onBack} />
 
       <style>{`@media (max-width: 640px) { .about-photo { order: -1; } .about-text { max-width: 100% !important; width: 100%; } }`}</style>
 
@@ -47,11 +47,11 @@ export function AboutPage({ onBack, onNavigate }: { onBack: () => void; onNaviga
       >
         <div className="about-text" style={{ flex: '0 1 auto', maxWidth: 'clamp(300px, 45%, 560px)' }}>
           <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
-            hey! i&#39;m lily, a junior at <a href="https://www.hmc.edu/" target="_blank" rel="noreferrer" style={linkStyle}>harvey mudd</a> studying cs and math with an econ concentration. i&#39;ve done national security work with <a href="https://www.infragardlosangeles.org/" target="_blank" rel="noreferrer" style={linkStyle}>infragard</a>, fbi outreach, and the doj, plus nlp research and full-stack dev.
+            hey! i&#39;m lily, currently at <a href="https://www.hmc.edu/" target="_blank" rel="noreferrer" style={linkStyle}>harvey mudd</a> studying cs and math with an econ concentration. i&#39;ve done national security work with <a href="https://www.infragardlosangeles.org/" target="_blank" rel="noreferrer" style={linkStyle}>infragard</a> and the doj, plus nlp as well as secure memory research.
           </p>
 
           <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
-            outside of the cs lab, i&#39;ve love swimming and am getting into <button onClick={() => onNavigate?.('gallery')} style={{ ...linkStyle, background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' }}>film photography</button>. you can probably find me playing zip or listening to <a href="https://music.youtube.com/@lilys2891?si=xOIeaIJDe79_4GIW" target="_blank" rel="noreferrer" style={linkStyle}> house music</a>.
+            outside of the cs lab, i love swimming and am getting into <button onClick={() => onNavigate?.('gallery')} style={{ ...linkStyle, background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' }}>film photography</button>. you can probably find me playing zip or listening to <a href="https://music.youtube.com/@lilysurj" target="_blank" rel="noreferrer" style={linkStyle}> house music</a>.
           </p>
 
           <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
