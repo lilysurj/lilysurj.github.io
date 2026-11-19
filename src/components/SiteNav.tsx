@@ -36,14 +36,12 @@ export function SiteNav({
   onClose,
   onCloseStart,
   startOpen = false,
-  showOverlay = false,
   hideNavItems = false,
 }: {
   onNavigate?: (page: NavItem) => void;
   onClose?: () => void;
   onCloseStart?: () => void;
   startOpen?: boolean;
-  showOverlay?: boolean;
   hideNavItems?: boolean;
 }) {
   const [navOpen, setNavOpen] = useState(startOpen);
@@ -103,23 +101,6 @@ export function SiteNav({
 
   return (
     <>
-      {showOverlay && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '6rem',
-            background: '#002FA7',
-            zIndex: 50,
-            pointerEvents: 'none',
-            opacity: revealed.size > 0 ? 1 : 0,
-            transition: 'opacity 0.35s ease',
-          }}
-        />
-      )}
-
       <button
         onClick={navOpen ? closeNav : openNav}
         aria-label={navOpen ? 'Close navigation' : 'Open navigation'}

@@ -610,3 +610,8 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 
 ## 2026-11-19 — SLO caption
 - `galleryMeta.ts`: caption key `'slo.jpg'` → `'slo.JPG'` to match the file, and fixed "obisbo" → "obispo". Build passes. Not committed yet (commit attempt was blocked pending the user's go-ahead).
+- User committed and pushed it themselves as bf02673.
+
+## 2026-11-19 — Remove home header bar
+- Removed the solid blue 6rem band behind the nav on the home page (`showOverlay` in `SiteNav.tsx`, only used by `HomePage.tsx`); deleted the prop entirely. Nav links and star stay, and still sit above the cursor trail (z 55/60 vs trail z 1). Build and lint pass. Not committed yet.
+- Pushed on top of the user's GitHub commit ccc4702 that deleted les_cocottes.JPG (pulled with rebase, file stays deleted).

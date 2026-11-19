@@ -29,7 +29,7 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
         touchAction: 'none',
       }}
     >
-      <SiteNav showOverlay startOpen={startOpen} onNavigate={onNavigate} />
+      <SiteNav startOpen={startOpen} onNavigate={onNavigate} />
 
       {/* Name — deliberately below trail z-index so photos can float over it */}
       <h1
