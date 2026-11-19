@@ -554,3 +554,14 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 - About: photo imported as `?w=1120&format=webp` (3.4 MB PNG → 72 KB). `minHeight` is `100dvh`. New `src/imagetools.d.ts` types `*format=webp` imports.
 - `index.html`: `theme-color` #002FA7. `index.css`: no tap highlight, no text-size inflation.
 - Verified with headless Chrome at 320/375/1280 (home, open nav, about, gallery, lightbox). Desktop looks the same. Not committed.
+
+## 2026-11-18 — Cursor trail source
+- Answered where the cursor photo trail idea came from: heatbureau.com (commit e59458e "Tune photo trail to match heatbureau spacing and flow"; also noted in this log next to the h1 z-index change). No code changes.
+
+## 2026-11-18 — Gallery photo order
+- `galleryMeta.ts`: `ALL_PHOTOS` now has a fixed order. `TOP` is arlington, new_york, boston, vets, friends. `MIDDLE` is bpl, green_beach, metro. `BOTTOM` is foothill_blvd. The other photos are split in half, one half before the middle group and one half after. Each photo also gets an `aspect` from the grid WebP's dimensions (`as: 'img'` query).
+- `GalleryPage.tsx`: CSS `columns` filled each column top to bottom, so array order didn't match what you see. It's now a JS masonry of flex columns: each photo goes into the shortest column, which fills left to right. The column count follows the old `columns: 4 140px` rule and updates on resize. Images get `aspectRatio` so the layout doesn't shift while they load.
+- `vite.config.ts`: imagetools' default `include` is case-sensitive, so `boston.JPG` and `friends.JPG` were never resized (the grid and trail served the 3–4 MB originals). Made the regex case-insensitive.
+- Checked: build and lint pass. A simulated layout at 4 columns gives top row arlington / brooklyn bridge / boston / morg + zoe, big bear under boston, and foothill blvd at the bottom of the tallest column. Not checked in a browser. Not committed.
+- Explained how to preview locally (`npm run dev` → http://localhost:5173 → gallery). No code changes.
+- Committed the gallery order, row-filling grid, and .JPG resize fix (plus the earlier 'sunflower by post malone' caption edit), then pushed to main to deploy. `.claude/` left untracked.

@@ -4,12 +4,33 @@ import { SiteNav } from './SiteNav';
 
 type Page = 'about' | 'words' | 'gallery' | 'projects';
 
+const GAP = 6;
+const MIN_COL_WIDTH = 140;
+const MAX_COLS = 4;
+
+const columnCount = () =>
+  Math.max(1, Math.min(MAX_COLS, Math.floor((window.innerWidth - GAP) / (MIN_COL_WIDTH + GAP))));
+
+// Masonry that fills left to right: each photo goes into the shortest column so far,
+// so the first photos form the top row and the last ones sit at the bottom
+function layoutColumns(count: number): number[][] {
+  const cols: number[][] = Array.from({ length: count }, () => []);
+  const heights = Array.from({ length: count }, () => 0);
+  PHOTOS.forEach((photo, i) => {
+    const c = heights.indexOf(Math.min(...heights));
+    cols[c].push(i);
+    heights[c] += photo.aspect;
+  });
+  return cols;
+}
+
 export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () => void; onBackStart?: () => void; onNavigate?: (page: Page) => void }) {
   const [visible, setVisible] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number>(0);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [cols, setCols] = useState(columnCount);
   const containerRef = useRef<HTMLDivElement>(null);
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -22,6 +43,12 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(id);
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setCols(columnCount());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   useEffect(() => {
@@ -67,69 +94,74 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
       ) : (
         <div
           style={{
-            columns: '4 140px',
-            columnGap: '6px',
-            padding: '6px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: `${GAP}px`,
+            padding: `${GAP}px`,
             paddingTop: '5rem',
           }}
         >
-          {PHOTOS.map(({ src, grid, filename }, i) => {
-            const caption = getCaption(filename);
-            const isHovered = hoveredIdx === i;
-            return (
-              <div
-                key={src}
-                onClick={() => openLightbox(src, i)}
-                onMouseEnter={() => setHoveredIdx(i)}
-                onMouseLeave={() => setHoveredIdx(null)}
-                style={{
-                  position: 'relative',
-                  display: 'block',
-                  marginBottom: '6px',
-                  breakInside: 'avoid',
-                  cursor: 'zoom-in',
-                }}
-              >
-                <img
-                  src={grid}
-                  alt=""
-                  loading="lazy"
-                  style={{ width: '100%', display: 'block' }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(0, 0, 0, 0.52)',
-                    opacity: isHovered ? 1 : 0,
-                    transition: 'opacity 0.25s ease',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '1rem',
-                    pointerEvents: 'none',
-                    gap: '0.2rem',
-                  }}
-                >
-                  {caption && (
-                    <span
+          {layoutColumns(cols).map((col, c) => (
+            <div key={c} style={{ flex: 1, minWidth: 0 }}>
+              {col.map(i => {
+                const { src, grid, filename, aspect } = PHOTOS[i];
+                const caption = getCaption(filename);
+                const isHovered = hoveredIdx === i;
+                return (
+                  <div
+                    key={src}
+                    onClick={() => openLightbox(src, i)}
+                    onMouseEnter={() => setHoveredIdx(i)}
+                    onMouseLeave={() => setHoveredIdx(null)}
+                    style={{
+                      position: 'relative',
+                      display: 'block',
+                      marginBottom: `${GAP}px`,
+                      cursor: 'zoom-in',
+                    }}
+                  >
+                    <img
+                      src={grid}
+                      alt=""
+                      loading="lazy"
+                      style={{ width: '100%', aspectRatio: `1 / ${aspect}`, display: 'block' }}
+                    />
+                    <div
                       style={{
-                        color: 'rgba(255,252,238,0.9)',
-                        fontSize: '1rem',
-                        fontWeight: 400,
-                        letterSpacing: '0.02em',
-                        lineHeight: 1.4,
-                        textAlign: 'center',
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'rgba(0, 0, 0, 0.52)',
+                        opacity: isHovered ? 1 : 0,
+                        transition: 'opacity 0.25s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '1rem',
+                        pointerEvents: 'none',
+                        gap: '0.2rem',
                       }}
                     >
-                      {caption}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                      {caption && (
+                        <span
+                          style={{
+                            color: 'rgba(255,252,238,0.9)',
+                            fontSize: '1rem',
+                            fontWeight: 400,
+                            letterSpacing: '0.02em',
+                            lineHeight: 1.4,
+                            textAlign: 'center',
+                          }}
+                        >
+                          {caption}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       )}
 
