@@ -586,3 +586,8 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 
 ## 2026-11-18 — Metro photo update
 - User replaced `metro.jpeg` with a new `metro.JPG` and updated its caption key. Also changed `MIDDLE` in `galleryMeta.ts` to `metro.JPG` so it keeps its pinned middle spot. Build and lint pass. Committed and pushed to deploy.
+
+## 2026-11-18 — Metro under arlington
+- `galleryMeta.ts`: moved `metro.JPG` from `MIDDLE` to second in `TOP`, and added a `STACKED` set. Photos in it get `stacked: true`.
+- `GalleryPage.tsx`: `layoutColumns` puts a stacked photo in the same column as the photo before it instead of the shortest column. Plain reordering would have put metro under boston, since the landscape boston photo leaves that column shortest.
+- Checked: build and lint pass. Headless Chrome on the built site at 1280/500/375px shows column 1 as arlington, metro, then the rest. Committed and pushed to deploy.

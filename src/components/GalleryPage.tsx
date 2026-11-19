@@ -12,12 +12,15 @@ const columnCount = () =>
   Math.max(1, Math.min(MAX_COLS, Math.floor((window.innerWidth - GAP) / (MIN_COL_WIDTH + GAP))));
 
 // Masonry that fills left to right: each photo goes into the shortest column so far,
-// so the first photos form the top row and the last ones sit at the bottom
+// so the first photos form the top row and the last ones sit at the bottom.
+// Stacked photos stay in the previous photo's column.
 function layoutColumns(count: number): number[][] {
   const cols: number[][] = Array.from({ length: count }, () => []);
   const heights = Array.from({ length: count }, () => 0);
+  let prev = 0;
   PHOTOS.forEach((photo, i) => {
-    const c = heights.indexOf(Math.min(...heights));
+    const c = photo.stacked && i > 0 ? prev : heights.indexOf(Math.min(...heights));
+    prev = c;
     cols[c].push(i);
     heights[c] += photo.aspect;
   });

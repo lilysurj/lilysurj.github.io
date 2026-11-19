@@ -17,9 +17,11 @@ const gridModules = import.meta.glob<{ default: { src: string; w: number; h: num
 );
 
 // Pinned spots in the gallery; every other photo fills in around the middle group
-const TOP = ['arlington.jpeg', 'new_york.jpeg', 'boston.JPG', 'vets.jpg', 'friends.JPG'];
-const MIDDLE = ['bpl.jpg', 'green_beach.jpeg', 'metro.JPG'];
+const TOP = ['arlington.jpeg', 'metro.JPG', 'new_york.jpeg', 'boston.JPG', 'vets.jpg', 'friends.JPG'];
+const MIDDLE = ['bpl.jpg', 'green_beach.jpeg'];
 const BOTTOM = ['foothill_blvd.jpeg'];
+// Go in the same column as the photo before them instead of the shortest one
+const STACKED = new Set(['metro.JPG']);
 
 function orderFilenames(filenames: string[]): string[] {
   const pinned = new Set([...TOP, ...MIDDLE, ...BOTTOM]);
@@ -44,6 +46,7 @@ const photosByFilename = new Map(
       thumb: thumbModules[path].default,
       grid: grid.src,
       aspect: grid.h / grid.w,
+      stacked: STACKED.has(filename),
       filename,
     }];
   }),
