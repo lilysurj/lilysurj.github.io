@@ -19,9 +19,7 @@ const gridModules = import.meta.glob<{ default: { src: string; w: number; h: num
 // Pinned spots in the gallery; every other photo fills in around the middle group
 const TOP = ['arlington.jpeg', 'metro.JPG', 'new_york.jpeg', 'boston.JPG', 'vets.jpg', 'friends.JPG'];
 const MIDDLE = ['bpl.jpg', 'green_beach.jpeg'];
-const BOTTOM = ['foothill_blvd.jpeg'];
-// Go in the same column as the photo before them instead of the shortest one
-const STACKED = new Set(['metro.JPG']);
+const BOTTOM = ['foothill_blvd.jpeg', 'blue_angels.jpg', 'ducks.jpg'];
 
 function orderFilenames(filenames: string[]): string[] {
   const pinned = new Set([...TOP, ...MIDDLE, ...BOTTOM]);
@@ -46,7 +44,6 @@ const photosByFilename = new Map(
       thumb: thumbModules[path].default,
       grid: grid.src,
       aspect: grid.h / grid.w,
-      stacked: STACKED.has(filename),
       filename,
     }];
   }),
@@ -78,23 +75,26 @@ const CAPTIONS: Record<string, string> = {
   'les_cocottes.JPG':    'les cocottes',
   'shinsen.JPG':         'shinsen',
   'nye.jpg':             'nye 2025',
-  'hike.jpg':            'hike'
+  'hike.jpg':            'hike',
+  'blue_angels.jpg':     'blue angels',
+  'slo.jpg':             'san luis obisbo'
 };
 
 export function getCaption(filename: string): string {
   return CAPTIONS[filename] ?? '';
 }
 
-const TRAIL_PHOTO_COUNT = 7;
+// Cursor photo trail on the homepage
+const TRAIL = [
+  'new_york.jpeg',
+  'boston.JPG',
+  'metro.JPG',
+  'getty.jpeg',
+  'bpl.jpg',
+  'seine.jpeg',
+  'megan_and_peen.jpeg',
+];
 
-// Cursor photo trail on the homepage: a random 7 gallery photos, re-picked on every page load
-function pickRandom<T>(items: T[], count: number): T[] {
-  const shuffled = [...items];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, count);
-}
-
-export const TRAIL_PHOTOS = pickRandom(ALL_PHOTOS, TRAIL_PHOTO_COUNT).map(({ thumb }) => thumb);
+export const TRAIL_PHOTOS = TRAIL
+  .filter(f => photosByFilename.has(f))
+  .map(f => photosByFilename.get(f)!.thumb);

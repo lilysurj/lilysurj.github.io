@@ -591,3 +591,16 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 - `galleryMeta.ts`: moved `metro.JPG` from `MIDDLE` to second in `TOP`, and added a `STACKED` set. Photos in it get `stacked: true`.
 - `GalleryPage.tsx`: `layoutColumns` puts a stacked photo in the same column as the photo before it instead of the shortest column. Plain reordering would have put metro under boston, since the landscape boston photo leaves that column shortest.
 - Checked: build and lint pass. Headless Chrome on the built site at 1280/500/375px shows column 1 as arlington, metro, then the rest. Committed and pushed to deploy.
+
+## 2026-11-19 — Nye caption key
+- User's `git commit` with no message aborted; the staged `galleryMeta.ts` change (caption key `'nye'` → `'nye.jpg'`) was committed as 1a5af98 "Fix nye caption filename" and pushed. Also explained that pushes to `main` auto-deploy via `.github/workflows/deploy.yml` (GitHub Pages).
+
+## 2026-11-19 — Remove STACKED
+- User no longer cares about exact photo order, just TOP/MIDDLE/BOTTOM groups. Removed `STACKED` and the `stacked` photo field from `galleryMeta.ts`, and the stacked-column special case from `layoutColumns()` in `GalleryPage.tsx`. No shuffling added. Build and lint pass. Not committed yet.
+
+## 2026-11-19 — Fixed cursor trail photos
+- `galleryMeta.ts`: replaced the random 7-photo trail pick with a hard-coded `TRAIL` list: new_york.jpeg, boston.JPG, metro.JPG, getty.jpeg, bpl.jpg, seine.jpeg, megan_and_peen.jpeg (brooklyn bridge, boston public garden, sunflower, getty, bpl, seine, scripps). Missing files are skipped. Build and lint pass. Not committed yet (along with the STACKED removal).
+
+## 2026-11-19 — Even gallery bottom
+- User: one photo always hung alone below the rest of the grid. `GalleryPage.tsx` `layoutColumns()` now places the last `2 × columns` photos tallest-first (so short landscape ones fill the final gaps), and the grid stretches: columns are flex columns with `alignItems: stretch`, each photo `flexGrow: aspect`, img `height: 100%` + `objectFit: cover`. Shorter columns' photos grow (slightly cropped in the grid; lightbox still shows full photo) so every column ends at the same line.
+- Checked: build and lint pass; headless Chrome at 1440/900/500px shows flush column bottoms. Not committed yet (with STACKED removal and fixed trail).

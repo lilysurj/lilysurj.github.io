@@ -13,16 +13,18 @@ const columnCount = () =>
 
 // Masonry that fills left to right: each photo goes into the shortest column so far,
 // so the first photos form the top row and the last ones sit at the bottom.
-// Stacked photos stay in the previous photo's column.
+// The last few go in tallest first so the column bottoms come out close to even,
+// and the grid stretches the photos in shorter columns to close what's left.
 function layoutColumns(count: number): number[][] {
   const cols: number[][] = Array.from({ length: count }, () => []);
   const heights = Array.from({ length: count }, () => 0);
-  let prev = 0;
-  PHOTOS.forEach((photo, i) => {
-    const c = photo.stacked && i > 0 ? prev : heights.indexOf(Math.min(...heights));
-    prev = c;
+  const order = PHOTOS.map((_, i) => i);
+  const tailStart = Math.max(0, order.length - count * 2);
+  const tail = order.splice(tailStart).sort((a, b) => PHOTOS[b].aspect - PHOTOS[a].aspect);
+  [...order, ...tail].forEach(i => {
+    const c = heights.indexOf(Math.min(...heights));
     cols[c].push(i);
-    heights[c] += photo.aspect;
+    heights[c] += PHOTOS[i].aspect;
   });
   return cols;
 }
@@ -98,14 +100,14 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
         <div
           style={{
             display: 'flex',
-            alignItems: 'flex-start',
+            alignItems: 'stretch',
             gap: `${GAP}px`,
             padding: `${GAP}px`,
             paddingTop: '5rem',
           }}
         >
           {layoutColumns(cols).map((col, c) => (
-            <div key={c} style={{ flex: 1, minWidth: 0 }}>
+            <div key={c} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
               {col.map(i => {
                 const { src, grid, filename, aspect } = PHOTOS[i];
                 const caption = getCaption(filename);
@@ -119,6 +121,7 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
                     style={{
                       position: 'relative',
                       display: 'block',
+                      flexGrow: aspect,
                       marginBottom: `${GAP}px`,
                       cursor: 'zoom-in',
                     }}
@@ -127,7 +130,7 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
                       src={grid}
                       alt=""
                       loading="lazy"
-                      style={{ width: '100%', aspectRatio: `1 / ${aspect}`, display: 'block' }}
+                      style={{ width: '100%', height: '100%', aspectRatio: `1 / ${aspect}`, objectFit: 'cover', display: 'block' }}
                     />
                     <div
                       style={{
