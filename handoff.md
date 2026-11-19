@@ -565,3 +565,13 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 - Checked: build and lint pass. A simulated layout at 4 columns gives top row arlington / brooklyn bridge / boston / morg + zoe, big bear under boston, and foothill blvd at the bottom of the tallest column. Not checked in a browser. Not committed.
 - Explained how to preview locally (`npm run dev` → http://localhost:5173 → gallery). No code changes.
 - Committed the gallery order, row-filling grid, and .JPG resize fix (plus the earlier 'sunflower by post malone' caption edit), then pushed to main to deploy. `.claude/` left untracked.
+- Installed GitHub CLI (gh 2.105.0) into ~/.local/bin (no Homebrew on this machine). Then, at the user's request, created ~/.zshrc (none existed) with ~/.local/bin on PATH. Already logged in as lilysurj.
+
+## 2026-11-18 — Per-page URLs question
+- User asked about real URLs like `/gallery`. Today nav is React state in `App.tsx` (`currentPage`), so the URL never changes. Explained the plan: sync `currentPage` with the URL using the History API (no router dependency, keeps the loader transitions), plus a build step that copies `dist/index.html` into `dist/gallery/index.html` etc. so GitHub Pages serves direct links. No code changes yet.
+- User ran `source ~/.zshrc`, so `gh` now works in their current terminal.
+
+## 2026-11-18 — Per-page URLs
+- `App.tsx`: pages now have real URLs (`/about`, `/words`, `/gallery`, `/projects`). The first page comes from `location.pathname` (trailing slash ignored, since GitHub Pages redirects `/gallery` to `/gallery/`). `transitionTo` and `handleBack` call `history.pushState`. A `popstate` listener runs the normal loader transition for browser back/forward. `PAGES` const replaces the `Page` union there.
+- `vite.config.ts`: new `pageRoutes` build plugin copies `dist/index.html` to `dist/<page>/index.html` so direct links work on GitHub Pages. Its `PAGE_ROUTES` list must match `PAGES` in App.tsx.
+- Checked: build and lint pass. Served `dist` with a plain static server: `/gallery` 301s to `/gallery/` and renders 21 images, `/about/` renders the About page, `/` renders home. Back/forward buttons not tested in a real browser. Not committed.

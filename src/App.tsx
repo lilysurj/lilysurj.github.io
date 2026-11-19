@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './index.css'
 // import { IntroOverlay } from './components/IntroOverlay'
 import { HomePage } from './components/HomePage'
@@ -8,7 +8,20 @@ import { AboutPage } from './components/AboutPage'
 import { PageLoader, LOADER_FADE_MS } from './components/PageLoader'
 import { ALL_PHOTOS } from './galleryMeta'
 
-type Page = 'about' | 'words' | 'gallery' | 'projects';
+// Keep in sync with PAGE_ROUTES in vite.config.ts
+const PAGES = ['about', 'words', 'gallery', 'projects'] as const;
+type Page = (typeof PAGES)[number];
+
+// GitHub Pages redirects /gallery to /gallery/, so ignore slashes
+const pageFromPath = (pathname: string): Page | null => {
+  const slug = pathname.replace(/^\/+|\/+$/g, '');
+  return (PAGES as readonly string[]).includes(slug) ? (slug as Page) : null;
+};
+
+const pushPath = (page: Page | null) => {
+  const path = page ? `/${page}` : '/';
+  if (pageFromPath(window.location.pathname) !== page) history.pushState(null, '', path);
+};
 
 const MIN_LOADER_MS = 700;
 const GALLERY_PRELOAD_COUNT = 12;
@@ -29,14 +42,15 @@ const preloadPage = (page: Page | null) =>
     : Promise.resolve();
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page | null>(null);
+  const [currentPage, setCurrentPage] = useState<Page | null>(() => pageFromPath(window.location.pathname));
   const [returnedFromPage, setReturnedFromPage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [blanking, setBlanking] = useState(false);
   const navToken = useRef(0);
 
-  const transitionTo = async (page: Page | null) => {
+  const transitionTo = async (page: Page | null, updateUrl = true) => {
     const token = ++navToken.current;
+    if (updateUrl) pushPath(page);
     setLoading(true);
     const ready = Promise.all([preloadPage(page), wait(MIN_LOADER_MS)]);
 
@@ -59,11 +73,21 @@ export default function App() {
 
   const handleBack = () => {
     navToken.current++;
+    pushPath(null);
     setLoading(false);
     setBlanking(false);
     setReturnedFromPage(true);
     setCurrentPage(null);
   };
+
+  // Browser back/forward: the URL already changed, so just play the transition
+  const transitionRef = useRef(transitionTo);
+  transitionRef.current = transitionTo;
+  useEffect(() => {
+    const onPopState = () => transitionRef.current(pageFromPath(window.location.pathname), false);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   return (
     <>
