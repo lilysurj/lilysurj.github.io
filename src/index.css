@@ -17,6 +17,25 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.name-letter {
+  display: inline-block;
+  pointer-events: none;
+}
+
+.name-letter-wave {
+  animation: nameWave 600ms ease-in-out;
+}
+
+@keyframes nameWave {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(-0.22em); }
+  65% { transform: translateY(0.045em); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .name-letter-wave { animation: none; }
+}
+
 @keyframes flyLeft {
   0%   { transform: translateX(calc(100vw - 5rem)) rotate(0deg);   animation-timing-function: ease-in-out; }
   25%  { transform: translateX(calc(100vw - 5rem)) rotate(-90deg); animation-timing-function: linear; }

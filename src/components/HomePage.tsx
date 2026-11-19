@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CursorPhotoTrail } from './CursorPhotoTrail';
 import { TRAIL_PHOTOS } from '../galleryMeta';
 import { SiteNav } from './SiteNav';
@@ -5,6 +6,7 @@ import { SiteNav } from './SiteNav';
 type NavItem = 'about' | 'words' | 'gallery' | 'projects';
 
 export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page: NavItem) => void; startOpen?: boolean }) {
+  const [wave, setWave] = useState({ run: 0, origin: 0 });
   // Desktop-sized trail photos would cover most of a phone screen
   const isSmallScreen = window.matchMedia('(max-width: 640px)').matches;
 
@@ -51,7 +53,32 @@ export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page
           zIndex: 2,
         }}
       >
-        lily surjadinata
+        <span
+          aria-label="lily surjadinata"
+          style={{ pointerEvents: 'auto', whiteSpace: 'nowrap' }}
+          onPointerEnter={event => {
+            if (event.pointerType === 'touch' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const letters = Array.from(event.currentTarget.children);
+            const origin = letters.reduce((closest, letter, index) => {
+              const bounds = letter.getBoundingClientRect();
+              const closestBounds = letters[closest].getBoundingClientRect();
+              return Math.abs(event.clientX - (bounds.left + bounds.width / 2)) <
+                Math.abs(event.clientX - (closestBounds.left + closestBounds.width / 2)) ? index : closest;
+            }, 0);
+            setWave(previous => ({ run: previous.run + 1, origin }));
+          }}
+        >
+          {Array.from('lily surjadinata').map((letter, index) => (
+            <span
+              key={`${wave.run}-${index}`}
+              aria-hidden="true"
+              className={wave.run > 0 ? 'name-letter name-letter-wave' : 'name-letter'}
+              style={{ animationDelay: `${Math.abs(index - wave.origin) * 45}ms` }}
+            >
+              {letter === ' ' ? '\u00a0' : letter}
+            </span>
+          ))}
+        </span>
       </h1>
     </CursorPhotoTrail>
   );
