@@ -543,3 +543,4 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 - Removed the leftover `hochsgiving.jpeg` caption from `galleryMeta.ts` (that photo was deleted).
 - About page copy edited for readability (AboutPage.tsx): smoother wording in paragraphs 1–2, removed a stray space inside the "house music" link, and fixed "edu !" to "edu!".
 - Committed the caption cleanup and About copy edit, and pushed to main to deploy.
+- About page: added the Palantir summer 2027 internship sentence (reworded to "i'll also be interning at palantir in summer 2027.") and the user's "i swim" edit. Committed and pushed to deploy.
