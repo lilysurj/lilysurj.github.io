@@ -604,3 +604,9 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 ## 2026-11-19 — Even gallery bottom
 - User: one photo always hung alone below the rest of the grid. `GalleryPage.tsx` `layoutColumns()` now places the last `2 × columns` photos tallest-first (so short landscape ones fill the final gaps), and the grid stretches: columns are flex columns with `alignItems: stretch`, each photo `flexGrow: aspect`, img `height: 100%` + `objectFit: cover`. Shorter columns' photos grow (slightly cropped in the grid; lightbox still shows full photo) so every column ends at the same line.
 - Checked: build and lint pass; headless Chrome at 1440/900/500px shows flush column bottoms. Not committed yet (with STACKED removal and fixed trail).
+
+## 2026-11-19 — Commit
+- Committed and pushed 98bfa59: gallery column bottoms, STACKED removal, fixed trail, plus user's new `blue_angels.jpg` and `slo.JPG`. Note: caption key is `'slo.jpg'` but the file is `slo.JPG`, so that caption won't show until the key matches (flagged to user).
+
+## 2026-11-19 — SLO caption
+- `galleryMeta.ts`: caption key `'slo.jpg'` → `'slo.JPG'` to match the file, and fixed "obisbo" → "obispo". Build passes. Not committed yet (commit attempt was blocked pending the user's go-ahead).

@@ -77,7 +77,7 @@ const CAPTIONS: Record<string, string> = {
   'nye.jpg':             'nye 2025',
   'hike.jpg':            'hike',
   'blue_angels.jpg':     'blue angels',
-  'slo.jpg':             'san luis obisbo'
+  'slo.JPG':             'san luis obispo'
 };
 
 export function getCaption(filename: string): string {
