@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ALL_PHOTOS as PHOTOS, getTag, getCaption } from '../galleryMeta';
+import { ALL_PHOTOS as PHOTOS, getCaption } from '../galleryMeta';
 import { SiteNav } from './SiteNav';
 
 type Page = 'about' | 'blog' | 'gallery' | 'projects';
@@ -76,7 +76,6 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
         >
           {PHOTOS.map(({ src, filename }, i) => {
             const caption = getCaption(filename);
-            const tag = getTag(filename);
             const isHovered = hoveredIdx === i;
             return (
               <div
@@ -128,17 +127,6 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
                       {caption}
                     </span>
                   )}
-                  <span
-                    style={{
-                      color: 'rgba(255,252,238,0.5)',
-                      fontSize: '0.875rem',
-                      fontWeight: 400,
-                      letterSpacing: '0.04em',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {tag}
-                  </span>
                 </div>
               </div>
             );
