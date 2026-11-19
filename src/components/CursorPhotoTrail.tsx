@@ -45,6 +45,15 @@ export function CursorPhotoTrail({
   const idCounterRef = useRef<number>(0);
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
 
+  // Load and decode every photo up front so spawning one never waits on the network or decoder
+  useEffect(() => {
+    images.forEach(src => {
+      const img = new Image();
+      img.src = src;
+      img.decode().catch(() => {});
+    });
+  }, [images]);
+
   useEffect(() => {
     const timers = timersRef.current;
     return () => timers.forEach(clearTimeout);

@@ -528,3 +528,15 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 - Fix: the blank back-to-home screen was hiding the nav star (each page root is `position: fixed`, so the star's z-index is trapped in the page's stacking context). Blank mode now draws its own star at the nav star's position running the same `flyRight 1.2s` animation, on a z-index 100 blank Klein Blue layer.
 - Fix: the loader's shooting star looped even while the loader was hidden, so on show it appeared mid-pass (~3/4 across) and then went again. PageLoader now bumps a `run` counter each time it becomes visible and keys the star on it, so every show starts a fresh pass from the left.
 - Shooting star pass shortened to 1s so it matches the loader's ~1s on-screen time (700ms min + 300ms fade-out): one pass per normal transition, keeps looping only if loading runs long.
+
+## 2026-11-18 — Commit & deploy
+- Committed loader work as `4f9f695` and pushed to main; GitHub Pages deploy workflow completed successfully. `.claude/` left untracked (local settings).
+
+## 2026-11-18 — Cursor trail uses every gallery photo
+- `src/galleryMeta.ts`: removed the film/digi/iphone grouping (`DEFAULT_TAG`, `DIGI_FILES`, `IPHONE_FILES`, `getTag`), which nothing else used after the camera tags came off the gallery. `FILM_PHOTOS` is now `TRAIL_PHOTOS`, which is just every photo in `src/assets/gallery/`.
+- `HomePage.tsx` now imports `TRAIL_PHOTOS`.
+- Follow-up: `TRAIL_PHOTOS` is now a random 7 gallery photos (Fisher–Yates shuffle in `pickRandom`). It's picked when the module loads, so you get a new set on every page reload and the same set while you move between pages.
+- Fix for cursor-trail lag: the trail was showing full-size originals (around 20 MP, up to 6.8 MB) at about 240px. Added `vite-imagetools` (dev dependency, registered in `vite.config.ts`). `galleryMeta.ts` now imports a second glob with `?w=480&format=webp`, so every photo in `ALL_PHOTOS` gets a `thumb`, and `TRAIL_PHOTOS` uses the thumbs (35–110 KB each). The gallery still uses the originals. `CursorPhotoTrail` now preloads and `decode()`s its images on mount. `npm run build` passes.
+
+## 2026-11-18 — Commit & deploy
+- Committed the gallery photo swap (removed big_shan, hackathon, hochsgiving, tiernan; added boston, bpl, rufus, the_odessey) and the cursor-trail work (no camera grouping, random 7 per load, WebP thumbnails, preloading). Pushed to main to trigger the GitHub Pages deploy. `.claude/` left untracked (local settings).

@@ -1,5 +1,5 @@
 import { CursorPhotoTrail } from './CursorPhotoTrail';
-import { FILM_PHOTOS } from '../galleryMeta';
+import { TRAIL_PHOTOS } from '../galleryMeta';
 import { SiteNav } from './SiteNav';
 
 type NavItem = 'about' | 'blog' | 'gallery' | 'projects';
@@ -7,7 +7,7 @@ type NavItem = 'about' | 'blog' | 'gallery' | 'projects';
 export function HomePage({ onNavigate, startOpen = false }: { onNavigate?: (page: NavItem) => void; startOpen?: boolean }) {
   return (
     <CursorPhotoTrail
-      images={FILM_PHOTOS}
+      images={TRAIL_PHOTOS}
       order="sequential"
       maxImages={10}
       spawnIntervalMs={80}
