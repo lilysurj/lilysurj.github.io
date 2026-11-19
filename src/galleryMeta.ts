@@ -72,7 +72,8 @@ const CAPTIONS: Record<string, string> = {
   'bpl.jpg':             'bpl',
   'rufus.jpg':           'innerbloom',
   'hawaii.jpg':          'oahu',
-  'vets.jpg':            'morg + zoe'
+  'vets.jpg':            'morg + zoe',
+  'les_cocottes.JPG':    'les cocottes'
 };
 
 export function getCaption(filename: string): string {

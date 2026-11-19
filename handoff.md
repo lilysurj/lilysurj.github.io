@@ -575,3 +575,8 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 - `App.tsx`: pages now have real URLs (`/about`, `/words`, `/gallery`, `/projects`). The first page comes from `location.pathname` (trailing slash ignored, since GitHub Pages redirects `/gallery` to `/gallery/`). `transitionTo` and `handleBack` call `history.pushState`. A `popstate` listener runs the normal loader transition for browser back/forward. `PAGES` const replaces the `Page` union there.
 - `vite.config.ts`: new `pageRoutes` build plugin copies `dist/index.html` to `dist/<page>/index.html` so direct links work on GitHub Pages. Its `PAGE_ROUTES` list must match `PAGES` in App.tsx.
 - Checked: build and lint pass. Served `dist` with a plain static server: `/gallery` 301s to `/gallery/` and renders 21 images, `/about/` renders the About page, `/` renders home. Back/forward buttons not tested in a real browser. Not committed.
+- Committed (f465686 "Give each page its own URL") and pushed to main to deploy. `.claude/` left untracked.
+- Deploy run 44451686037 succeeded. Live: https://lilysurj.github.io/gallery 301s to /gallery/ (200), /about/ returns 200.
+
+## 2026-11-18 — New gallery photo
+- Committed and pushed `les_cocottes.JPG` with caption 'les cocottes' (user added both). Build passed and generated the resized WebP copies.
