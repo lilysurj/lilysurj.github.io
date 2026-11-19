@@ -59,7 +59,7 @@ const CAPTIONS: Record<string, string> = {
   'bowls.jpeg':          'clinamen',
   'ducks.jpeg':          'ducks',
   'foothill_blvd.jpeg':  'foothill blvd',
-  'friends.JPG':         'big bear!',
+  'friends.JPG':         'arrowhead!',
   'getty.jpeg':          'getty',
   'green_beach.jpeg':    'green',
   'greenhouse.jpeg':     'us botanical garden',
@@ -69,14 +69,16 @@ const CAPTIONS: Record<string, string> = {
   'megan_and_peen.jpeg': 'scripps',
   'metro.JPG':           'sunflower by post malone',
   'new_york.jpeg':       'brooklyn bridge',
-  'seine.jpeg':          'seine river',
+  'seine.jpeg':          'seine',
   'boston.JPG':          'boston public garden',
   'the_odessey.jpg':     'no one',
   'bpl.jpg':             'bpl',
-  'rufus.jpg':           'innerbloom',
   'hawaii.jpg':          'oahu',
   'vets.jpg':            'morg + zoe',
-  'les_cocottes.JPG':    'les cocottes'
+  'les_cocottes.JPG':    'les cocottes',
+  'shinsen.JPG':         'shinsen',
+  'nye':                 'nye 2025',
+  'hike.jpg':            'hike'
 };
 
 export function getCaption(filename: string): string {
