@@ -580,3 +580,6 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 
 ## 2026-11-18 — New gallery photo
 - Committed and pushed `les_cocottes.JPG` with caption 'les cocottes' (user added both). Build passed and generated the resized WebP copies.
+
+## 2026-11-18 — About copy rewrite
+- `AboutPage.tsx`: replaced the bio with the user's new text ("i've done research...", "in summer 2027, i'll be interning at palantir.", "outside the lab", "i also love wordle, and i'm usually listening to", email line without the "!"). Kept the harvey mudd, infragard, film photography (gallery) and house music links. Build and lint pass. Committed and pushed to deploy.

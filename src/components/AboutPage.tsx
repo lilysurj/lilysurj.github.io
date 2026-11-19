@@ -47,15 +47,15 @@ export function AboutPage({ onBack, onBackStart, onNavigate }: { onBack: () => v
       >
         <div className="about-text" style={{ flex: '0 1 auto', maxWidth: 'clamp(300px, 45%, 560px)' }}>
           <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
-            hey! i&#39;m lily, a student at <a href="https://www.hmc.edu/" target="_blank" rel="noreferrer" style={linkStyle}>harvey mudd</a> studying cs and math with a concentration in econ. i&#39;ve worked on national security with <a href="https://www.infragardlosangeles.org/" target="_blank" rel="noreferrer" style={linkStyle}>infragard</a> and the doj, and done research in nlp and secure memory. i&#39;ll also be interning at palantir in summer 2027.
+            hey! i&#39;m lily, a student at <a href="https://www.hmc.edu/" target="_blank" rel="noreferrer" style={linkStyle}>harvey mudd</a> studying cs and math with a concentration in econ. i&#39;ve worked on national security with <a href="https://www.infragardlosangeles.org/" target="_blank" rel="noreferrer" style={linkStyle}>infragard</a> and the doj, and i&#39;ve done research in nlp and secure memory. in summer 2027, i&#39;ll be interning at palantir.
           </p>
 
           <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
-            outside the cs lab, i swim and i&#39;m getting into <button onClick={() => onNavigate?.('gallery')} style={{ ...linkStyle, background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' }}>film photography</button>. you can usually find me playing zip or listening to <a href="https://music.youtube.com/@lilysurj" target="_blank" rel="noreferrer" style={linkStyle}>house music</a>.
+            outside the lab, i swim and i&#39;m getting into <button onClick={() => onNavigate?.('gallery')} style={{ ...linkStyle, background: 'none', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer' }}>film photography</button>. i also love wordle, and i&#39;m usually listening to <a href="https://music.youtube.com/@lilysurj" target="_blank" rel="noreferrer" style={linkStyle}>house music</a>.
           </p>
 
           <p style={{ fontSize: '1.1rem', lineHeight: 1.75, opacity: 0.85, margin: '0 0 1.5rem' }}>
-            reach out at lsurjadinata [at] hmc [dot] edu!
+            reach out at lsurjadinata [at] hmc [dot] edu
           </p>
         </div>
 
