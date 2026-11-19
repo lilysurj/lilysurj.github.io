@@ -94,7 +94,8 @@ export function CursorPhotoTrail({
     const container = containerRef.current;
     if (!container) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    // Pointer events cover both mouse and touch; a tap also spawns, since touch has no hover movement
+    const handlePointerMove = (e: PointerEvent) => {
       const now = performance.now();
       const rect = container.getBoundingClientRect();
       const cx = e.clientX - rect.left;
@@ -118,8 +119,16 @@ export function CursorPhotoTrail({
       lastSpawnTimeRef.current = now;
     };
 
-    container.addEventListener('mousemove', handleMouseMove);
-    return () => container.removeEventListener('mousemove', handleMouseMove);
+    const handlePointerDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') handlePointerMove(e);
+    };
+
+    container.addEventListener('pointermove', handlePointerMove);
+    container.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      container.removeEventListener('pointermove', handlePointerMove);
+      container.removeEventListener('pointerdown', handlePointerDown);
+    };
   }, [spawnImage, spawnIntervalMs, minMovePx]);
 
   return (

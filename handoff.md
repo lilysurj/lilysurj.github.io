@@ -545,3 +545,12 @@ Both use `color: inherit` and `textDecorationColor: rgba(255,252,238,0.4)` to ke
 - Committed the caption cleanup and About copy edit, and pushed to main to deploy.
 - About page: added the Palantir summer 2027 internship sentence (reworded to "i'll also be interning at palantir in summer 2027.") and the user's "i swim" edit. Committed and pushed to deploy.
 - Renamed the "blog" nav item/page id to "words" (App, About, Gallery, Home, PageView, SiteNav). Committed and pushed to deploy.
+
+## 2026-11-18 — Mobile optimization
+- Nav (`SiteNav.tsx`): below 640px the links span from just past the star to the right edge (Tailwind `left-[4.5rem] right-5`, desktop keeps `28vw`/`25vw`). Link text uses `clamp(0.875rem, 4.2vw, 1rem)`, which is 1rem from ~380px up. Buttons got `0.5rem` vertical padding for bigger tap targets.
+- Home (`HomePage.tsx`): name font is `clamp(min(2.5rem, 11vw), 6.5vw, 6rem)`, which is the same as before above ~360px and shrinks with the viewport below that. Trail photos are 110–150px on screens ≤640px (desktop stays 180–240). `touchAction: 'none'` lets finger drags draw the trail.
+- `CursorPhotoTrail.tsx`: switched `mousemove` to `pointermove` (mouse + touch). A touch tap also spawns a photo.
+- Gallery: the grid now uses 800px WebP copies (`grid` in `galleryMeta.ts`, via vite-imagetools) instead of the 2–7 MB originals. The loader preloads those. The lightbox still shows originals. The lightbox has swipe left/right, shows the caption on touch screens (`[@media(hover:hover)]:hidden`), and uses `92dvh`. Prev/next logic is merged into `stepLightbox`.
+- About: photo imported as `?w=1120&format=webp` (3.4 MB PNG → 72 KB). `minHeight` is `100dvh`. New `src/imagetools.d.ts` types `*format=webp` imports.
+- `index.html`: `theme-color` #002FA7. `index.css`: no tap highlight, no text-size inflation.
+- Verified with headless Chrome at 320/375/1280 (home, open nav, about, gallery, lightbox). Desktop looks the same. Not committed.

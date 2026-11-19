@@ -25,7 +25,7 @@ const preloadImage = (src: string) =>
 // Assets the destination page needs before it's revealed
 const preloadPage = (page: Page | null) =>
   page === 'gallery'
-    ? Promise.all(ALL_PHOTOS.slice(0, GALLERY_PRELOAD_COUNT).map(p => preloadImage(p.src)))
+    ? Promise.all(ALL_PHOTOS.slice(0, GALLERY_PRELOAD_COUNT).map(p => preloadImage(p.grid)))
     : Promise.resolve();
 
 export default function App() {

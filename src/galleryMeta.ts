@@ -9,9 +9,16 @@ const thumbModules = import.meta.glob<{ default: string }>(
   { eager: true, query: { w: 480, format: 'webp' } },
 );
 
+// Mid-size WebP copies for the gallery grid, so phones don't download the multi-MB originals up front
+const gridModules = import.meta.glob<{ default: string }>(
+  './assets/gallery/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP,gif,GIF,avif,AVIF}',
+  { eager: true, query: { w: 800, format: 'webp' } },
+);
+
 export const ALL_PHOTOS = Object.entries(imageModules).map(([path, m]) => ({
   src: m.default,
   thumb: thumbModules[path].default,
+  grid: gridModules[path].default,
   filename: path.split('/').pop()!,
 }));
 
@@ -34,7 +41,9 @@ const CAPTIONS: Record<string, string> = {
   'boston.JPG':          'boston public garden',
   'the_odessey.jpg':     'no one',
   'bpl.jpg':             'bpl',
-  'rufus.jpg':           'innerbloom'
+  'rufus.jpg':           'innerbloom',
+  'hawaii.jpg':          'oahu',
+  'vets.jpg':            'morg + zoe'
 };
 
 export function getCaption(filename: string): string {

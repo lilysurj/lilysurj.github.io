@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
-import lilyPhoto from '../assets/lily.png';
+import lilyPhoto from '../assets/lily.png?w=1120&format=webp';
 import { SiteNav } from './SiteNav';
 
 const linkStyle: CSSProperties = { color: 'inherit', textDecoration: 'underline', textDecorationColor: 'rgba(255,252,238,0.4)' };
@@ -33,7 +33,7 @@ export function AboutPage({ onBack, onBackStart, onNavigate }: { onBack: () => v
       {/* Content */}
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: '100dvh',
           paddingTop: '6rem',
           paddingBottom: '4rem',
           paddingLeft: '1.5rem',

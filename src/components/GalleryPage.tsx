@@ -11,6 +11,13 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
   const [lightboxIdx, setLightboxIdx] = useState<number>(0);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const stepLightbox = (delta: number) => {
+    const idx = (lightboxIdx + delta + PHOTOS.length) % PHOTOS.length;
+    setLightboxIdx(idx);
+    setLightbox(PHOTOS[idx].src);
+  };
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
@@ -21,16 +28,8 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
     const onKey = (e: KeyboardEvent) => {
       if (!lightbox) return;
       if (e.key === 'Escape') setLightbox(null);
-      if (e.key === 'ArrowRight') {
-        const next = (lightboxIdx + 1) % PHOTOS.length;
-        setLightboxIdx(next);
-        setLightbox(PHOTOS[next].src);
-      }
-      if (e.key === 'ArrowLeft') {
-        const prev = (lightboxIdx - 1 + PHOTOS.length) % PHOTOS.length;
-        setLightboxIdx(prev);
-        setLightbox(PHOTOS[prev].src);
-      }
+      if (e.key === 'ArrowRight') stepLightbox(1);
+      if (e.key === 'ArrowLeft') stepLightbox(-1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -74,7 +73,7 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
             paddingTop: '5rem',
           }}
         >
-          {PHOTOS.map(({ src, filename }, i) => {
+          {PHOTOS.map(({ src, grid, filename }, i) => {
             const caption = getCaption(filename);
             const isHovered = hoveredIdx === i;
             return (
@@ -92,7 +91,7 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
                 }}
               >
                 <img
-                  src={src}
+                  src={grid}
                   alt=""
                   loading="lazy"
                   style={{ width: '100%', display: 'block' }}
@@ -138,6 +137,20 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
       {lightbox && (
         <div
           onClick={() => setLightbox(null)}
+          // Horizontal swipe flips photos on touch screens
+          onTouchStart={e => {
+            const t = e.touches[0];
+            swipeStartRef.current = { x: t.clientX, y: t.clientY };
+          }}
+          onTouchEnd={e => {
+            const start = swipeStartRef.current;
+            swipeStartRef.current = null;
+            if (!start || PHOTOS.length < 2) return;
+            const t = e.changedTouches[0];
+            const dx = t.clientX - start.x;
+            const dy = t.clientY - start.y;
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) stepLightbox(dx < 0 ? 1 : -1);
+          }}
           style={{
             position: 'fixed',
             inset: 0,
@@ -155,11 +168,31 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
             onClick={e => e.stopPropagation()}
             style={{
               maxWidth: '92vw',
-              maxHeight: '92vh',
+              maxHeight: '92dvh',
               objectFit: 'contain',
               cursor: 'default',
             }}
           />
+
+          {/* Captions are shown on hover in the grid, so touch screens get them here instead */}
+          {getCaption(PHOTOS[lightboxIdx].filename) && (
+            <span
+              className="[@media(hover:hover)]:hidden"
+              style={{
+                position: 'fixed',
+                bottom: '1.5rem',
+                left: '1.5rem',
+                right: '1.5rem',
+                textAlign: 'center',
+                color: 'rgba(255,252,238,0.9)',
+                fontSize: '1rem',
+                letterSpacing: '0.02em',
+                pointerEvents: 'none',
+              }}
+            >
+              {getCaption(PHOTOS[lightboxIdx].filename)}
+            </span>
+          )}
 
           {/* Arrow buttons */}
           {PHOTOS.length > 1 && (
@@ -167,9 +200,7 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
               <button
                 onClick={e => {
                   e.stopPropagation();
-                  const prev = (lightboxIdx - 1 + PHOTOS.length) % PHOTOS.length;
-                  setLightboxIdx(prev);
-                  setLightbox(PHOTOS[prev].src);
+                  stepLightbox(-1);
                 }}
                 aria-label="Previous photo"
                 style={{
@@ -194,9 +225,7 @@ export function GalleryPage({ onBack, onBackStart, onNavigate }: { onBack: () =>
               <button
                 onClick={e => {
                   e.stopPropagation();
-                  const next = (lightboxIdx + 1) % PHOTOS.length;
-                  setLightboxIdx(next);
-                  setLightbox(PHOTOS[next].src);
+                  stepLightbox(1);
                 }}
                 aria-label="Next photo"
                 style={{

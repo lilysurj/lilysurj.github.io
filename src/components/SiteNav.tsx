@@ -140,13 +140,13 @@ export function SiteNav({
         <StarIcon style={{ width: 32, height: 32 }} />
       </button>
 
+      {/* Phones: span from just past the star to the right edge; the vw insets leave too little room */}
       <nav
         aria-label="Main navigation"
+        className="left-[4.5rem] right-5 sm:left-[28vw] sm:right-[25vw]"
         style={{
           position: 'fixed',
           top: '1.5rem',
-          left: '28vw',
-          right: '25vw',
           height: '2rem',
           display: 'flex',
           alignItems: 'center',
@@ -165,11 +165,12 @@ export function SiteNav({
               background: 'none',
               border: 'none',
               color: '#FFFCEE',
-              fontSize: '1rem',
+              // Steps down a little on phones narrower than ~380px so the four items keep some breathing room
+              fontSize: 'clamp(0.875rem, 4.2vw, 1rem)',
               fontWeight: 500,
               letterSpacing: '0.03em',
               cursor: 'pointer',
-              padding: 0,
+              padding: '0.5rem 0',
             }}
           >
             {item}
